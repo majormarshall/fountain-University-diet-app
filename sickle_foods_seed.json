@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ugu",
+    "food_name": "Ugu (Pumpkin Leaves)",
+    "category": "Vegetable",
+    "short_desc": "High in iron, folate and antioxidants\u2014excellent for blood support.",
+    "recommended_for_sickle_cell": true,
+    "caution": false,
+    "nutrients": {
+      "calories": 40,
+      "protein": 3.2,
+      "iron": "High",
+      "folate": "High",
+      "hydrationScore": 4,
+      "antiInflammatoryScore": 4
+    },
+    "molecular_benefits": [
+      "beta-carotene",
+      "polyphenols",
+      "iron-dense",
+      "vitamin C"
+    ]
+  },
+  {
+    "id": "zobo",
+    "food_name": "Zobo (Hibiscus Drink, unsweetened)",
+    "category": "Drink",
+    "short_desc": "Hydrating and antioxidant-rich.",
+    "recommended_for_sickle_cell": true,
+    "caution": false,
+    "nutrients": {
+      "calories": 15,
+      "protein": 0,
+      "iron": "Low",
+      "folate": "Low",
+      "hydrationScore": 5,
+      "antiInflammatoryScore": 4
+    },
+    "molecular_benefits": [
+      "anthocyanins",
+      "vitamin C"
+    ]
+  },
+  {
+    "id": "moi_moi",
+    "food_name": "Moi Moi",
+    "category": "Legume",
+    "short_desc": "Steamed bean pudding \u2014 gentle on digestion and iron-supportive.",
+    "recommended_for_sickle_cell": true,
+    "caution": false,
+    "nutrients": {
+      "calories": 250,
+      "protein": 12,
+      "iron": "Medium",
+      "folate": "Medium",
+      "hydrationScore": 3,
+      "antiInflammatoryScore": 3
+    },
+    "molecular_benefits": [
+      "plant protein",
+      "iron",
+      "folate"
+    ]
+  },
+  {
+    "id": "dodo_fried",
+    "food_name": "Plantain (Dodo - Fried)",
+    "category": "Snack",
+    "short_desc": "High oil content \u2014 limit for inflammation reasons.",
+    "recommended_for_sickle_cell": false,
+    "caution": true,
+    "nutrients": {
+      "calories": 350,
+      "protein": 2,
+      "iron": "Low",
+      "folate": "Low",
+      "hydrationScore": 1,
+      "antiInflammatoryScore": 1
+    },
+    "molecular_benefits": []
+  }
+]
