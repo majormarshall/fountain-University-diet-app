@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255),
-  role VARCHAR(50) CHECK (role IN ('student', 'nutritionist', 'doctor', 'admin')) NOT NULL,
+  role VARCHAR(50) CHECK (role IN ('student', 'staff', 'nutritionist', 'doctor', 'admin')) NOT NULL,
   email VARCHAR(255) UNIQUE,
   password_hash TEXT NOT NULL,
   reset_token VARCHAR(255),
