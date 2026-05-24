@@ -6,7 +6,8 @@ import SickleCellSection from '../components/SickleCellSection';
 const API_BASE = 'http://localhost:4000';
 
 export default function Home() {
-  const [tab, setTab] = useState<'home' | 'sickle' | 'nutritionist-panel'>('home');
+  const [tab, setTab] = useState<'home' | 'sickle' | 'nutritionist-panel' | 'admin-panel'>('home');
+  const [adminSubTab, setAdminSubTab] = useState<'users' | 'foods'>('users');
   
   // User Session State
   const [user, setUser] = useState<any>(null);
@@ -26,6 +27,26 @@ export default function Home() {
   const [dinnerItem, setDinnerItem] = useState('');
   const [snacksItem, setSnacksItem] = useState('');
 
+  // Admin User CRUD States
+  const [userIdToEdit, setUserIdToEdit] = useState<string | null>(null);
+  const [adminUserUsername, setAdminUserUsername] = useState('');
+  const [adminUserName, setAdminUserName] = useState('');
+  const [adminUserRole, setAdminUserRole] = useState('student');
+  const [adminUserEmail, setAdminUserEmail] = useState('');
+  const [adminUserPassword, setAdminUserPassword] = useState('');
+  const [adminUserQuery, setAdminUserQuery] = useState('');
+
+  // Admin Food CRUD States
+  const [foodIdToEdit, setFoodIdToEdit] = useState<string | null>(null);
+  const [adminFoodName, setAdminFoodName] = useState('');
+  const [adminFoodCategory, setAdminFoodCategory] = useState('');
+  const [adminFoodCalories, setAdminFoodCalories] = useState('');
+  const [adminFoodProtein, setAdminFoodProtein] = useState('');
+  const [adminFoodCarbs, setAdminFoodCarbs] = useState('');
+  const [adminFoodFat, setAdminFoodFat] = useState('');
+  const [adminFoodNotes, setAdminFoodNotes] = useState('');
+  const [adminFoodQuery, setAdminFoodQuery] = useState('');
+
   // Load token on startup
   useEffect(() => {
     const savedToken = localStorage.getItem('fuo_token');
@@ -42,14 +63,14 @@ export default function Home() {
     axios.get(`${API_BASE}${url}`, getHeaders()).then(r => r.data);
 
   // Fetch standard foods & university users (students/staff)
-  const { data: foods } = useSWR('/api/foods', authenticatedFetcher);
+  const { data: foods, mutate: mutateFoods } = useSWR('/api/foods', authenticatedFetcher);
   const { data: allUsers, mutate: mutateUsers } = useSWR(
-    user?.role === 'nutritionist' || user?.role === 'admin' ? '/api/users' : null, 
+    user ? '/api/users' : null, 
     authenticatedFetcher
   );
 
   // Fetch logged in student's diet plans
-  const { data: studentPlans, mutate: mutateStudentPlans } = useSWR(
+  const { data: studentPlans } = useSWR(
     user && (user.role === 'student' || user.role === 'doctor') ? `/api/diet/${user.username}` : null,
     authenticatedFetcher
   );
@@ -76,14 +97,16 @@ export default function Home() {
       setToken(jwtToken);
       setUser(loggedUser);
       
-      // Auto redirect to nutritionist panel if role fits
-      if (loggedUser.role === 'nutritionist' || loggedUser.role === 'admin') {
+      // Auto redirect based on role
+      if (loggedUser.role === 'admin') {
+        setTab('admin-panel');
+      } else if (loggedUser.role === 'nutritionist') {
         setTab('nutritionist-panel');
       } else {
         setTab('home');
       }
     } catch (err: any) {
-      setLoginError(err.response?.data?.message || 'Invalid username (matric/staff ID) or password.');
+      setLoginError(err.response?.data?.message || 'Invalid Matric ID / Staff ID or password.');
     }
   }
 
@@ -100,13 +123,13 @@ export default function Home() {
   function fillDemo(role: 'student' | 'nutritionist' | 'admin') {
     if (role === 'student') {
       setUsernameInput('FUO/20/0205');
-      setPasswordInput('student123');
+      setPasswordInput('fuo/20/0205');
     } else if (role === 'nutritionist') {
       setUsernameInput('profsmogunbode');
       setPasswordInput('ogunbode12');
     } else if (role === 'admin') {
-      setUsernameInput('bello');
-      setPasswordInput('Ayomide12');
+      setUsernameInput('kalibest10');
+      setPasswordInput('airborne');
     }
   }
 
@@ -135,7 +158,6 @@ export default function Home() {
 
       alert(`Diet plan successfully published to ${selectedStudent.name}!`);
       
-      // Reset inputs
       setBreakfastItem('');
       setLunchItem('');
       setDinnerItem('');
@@ -143,14 +165,144 @@ export default function Home() {
       setNutritionNotes('');
       setForSickleCell(false);
       
-      // Re-fetch plans
       mutateSelectedStudentPlans();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to publish diet plan.');
     }
   }
 
-  // If not logged in, render the beautiful portal login page
+  // Admin User Save / Update
+  async function handleAdminSaveUser(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const payload = {
+        username: adminUserUsername,
+        name: adminUserName,
+        role: adminUserRole,
+        email: adminUserEmail,
+        password: adminUserPassword
+      };
+
+      if (userIdToEdit) {
+        await axios.put(`${API_BASE}/api/users/${userIdToEdit}`, payload, getHeaders());
+        alert('User updated successfully!');
+      } else {
+        await axios.post(`${API_BASE}/api/users`, payload, getHeaders());
+        alert('New User created successfully!');
+      }
+
+      // Reset
+      setUserIdToEdit(null);
+      setAdminUserUsername('');
+      setAdminUserName('');
+      setAdminUserRole('student');
+      setAdminUserEmail('');
+      setAdminUserPassword('');
+      
+      mutateUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to save user.');
+    }
+  }
+
+  function handleEditUserClick(u: any) {
+    setUserIdToEdit(u.id);
+    setAdminUserUsername(u.username);
+    setAdminUserName(u.name);
+    setAdminUserRole(u.role);
+    setAdminUserEmail(u.email || '');
+    setAdminUserPassword(''); // blank for no password change
+  }
+
+  async function handleDeleteUser(id: string, name: string) {
+    if (!confirm(`Are you absolutely sure you want to delete ${name}? This will purge their history and diet logs!`)) return;
+    try {
+      await axios.delete(`${API_BASE}/api/users/${id}`, getHeaders());
+      alert('User deleted.');
+      mutateUsers();
+      if (selectedStudent?.id === id) setSelectedStudent(null);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete user.');
+    }
+  }
+
+  // Admin Food Save / Update
+  async function handleAdminSaveFood(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: adminFoodName,
+        category: adminFoodCategory,
+        calories: adminFoodCalories,
+        protein_g: adminFoodProtein,
+        carbs_g: adminFoodCarbs,
+        fat_g: adminFoodFat,
+        notes: adminFoodNotes
+      };
+
+      if (foodIdToEdit) {
+        await axios.put(`${API_BASE}/api/foods/${foodIdToEdit}`, payload, getHeaders());
+        alert('Food item updated!');
+      } else {
+        await axios.post(`${API_BASE}/api/foods`, payload, getHeaders());
+        alert('New food item added to database!');
+      }
+
+      // Reset
+      setFoodIdToEdit(null);
+      setAdminFoodName('');
+      setAdminFoodCategory('');
+      setAdminFoodCalories('');
+      setAdminFoodProtein('');
+      setAdminFoodCarbs('');
+      setAdminFoodFat('');
+      setAdminFoodNotes('');
+      
+      mutateFoods();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to save food item.');
+    }
+  }
+
+  function handleEditFoodClick(f: any) {
+    setFoodIdToEdit(f.id);
+    setAdminFoodName(f.name);
+    setAdminFoodCategory(f.category || '');
+    setAdminFoodCalories(String(f.calories || 0));
+    setAdminFoodProtein(String(f.protein_g || 0));
+    setAdminFoodCarbs(String(f.carbs_g || 0));
+    setAdminFoodFat(String(f.fat_g || 0));
+    setAdminFoodNotes(f.notes || '');
+  }
+
+  async function handleDeleteFood(id: string, name: string) {
+    if (!confirm(`Delete ${name} from standard catalog?`)) return;
+    try {
+      await axios.delete(`${API_BASE}/api/foods/${id}`, getHeaders());
+      alert('Food item deleted.');
+      mutateFoods();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete food item.');
+    }
+  }
+
+  // Filtered Users List for Admin Panel
+  const filteredUsers = Array.isArray(allUsers) 
+    ? allUsers.filter((u: any) => 
+        u.name.toLowerCase().includes(adminUserQuery.toLowerCase()) || 
+        u.username.toLowerCase().includes(adminUserQuery.toLowerCase())
+      )
+    : [];
+
+  // Filtered Foods List for Admin Panel
+  const filteredFoods = Array.isArray(foods)
+    ? foods.filter((f: any) => 
+        f.name.toLowerCase().includes(adminFoodQuery.toLowerCase()) ||
+        (f.category && f.category.toLowerCase().includes(adminFoodQuery.toLowerCase()))
+      )
+    : [];
+
+  // If not logged in, render the login page
   if (!token) {
     return (
       <div className="app-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
@@ -225,10 +377,9 @@ export default function Home() {
     );
   }
 
-  // Render authenticated portal workspace
   return (
     <div className="app-container">
-      {/* Dynamic Header */}
+      {/* Header */}
       <header className="app-header">
         <div className="brand-section">
           <img
@@ -265,28 +416,30 @@ export default function Home() {
               🥑 Nutritionist Control Panel
             </button>
           )}
+          {user.role === 'admin' && (
+            <button 
+              onClick={() => setTab('admin-panel')} 
+              className={`tab-btn ${tab === 'admin-panel' ? 'active' : ''}`}
+            >
+              ⚙️ Admin Portal
+            </button>
+          )}
           <button onClick={handleLogout} className="tab-btn" style={{ color: 'var(--danger)' }}>
             🚪 Logout
           </button>
         </nav>
       </header>
 
-      {/* Main Tabbed Area */}
+      {/* Main workspace panels */}
       <main>
         {tab === 'home' && (
           <div className="dashboard-layout">
-            
-            {/* Student/Staff Personalized Prescription View */}
             <div>
               <div className="card">
                 <h2>Personalized Nutrition Tally & Prescription</h2>
                 
                 {Array.isArray(studentPlans) && studentPlans.length > 0 ? (
                   <div>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                      Here is your official diet plan, custom formulated for you by our university nutritionist. Follow this plan to keep your metabolic levels and hydration optimal.
-                    </p>
-
                     {studentPlans.map((plan: any) => (
                       <div key={plan.id} style={{ border: '1px solid var(--primary-glow)', background: 'var(--primary-light)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -314,7 +467,7 @@ export default function Home() {
                           ))}
                         </div>
 
-                        {/* Nutritionist prescription notes */}
+                        {/* Notes */}
                         {plan.notes && (
                           <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px dashed var(--light-border)' }}>
                             <h5 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--dark-bg)', marginBottom: '0.25rem' }}>
@@ -336,7 +489,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* General App Info Section */}
               <div className="card">
                 <h2>Molecular Dietary Shield</h2>
                 <p style={{ color: 'var(--text-secondary)' }}>
@@ -345,7 +497,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* General App Right Widget */}
             <aside>
               <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
                 <h3>🏫 Student / Staff Details</h3>
@@ -365,7 +516,6 @@ export default function Home() {
                 </div>
               </div>
             </aside>
-
           </div>
         )}
 
@@ -373,8 +523,6 @@ export default function Home() {
 
         {tab === 'nutritionist-panel' && (user.role === 'nutritionist' || user.role === 'admin') && (
           <div className="dashboard-layout">
-            
-            {/* Left Column: All Students/Staff list */}
             <div>
               <div className="card">
                 <h2>University Student & Staff Registry</h2>
@@ -406,7 +554,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Selection Detail & Past Prescriptions */}
               {selectedStudent && (
                 <div className="card">
                   <h2>Diet History for {selectedStudent.name}</h2>
@@ -445,7 +592,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Right Column: Nutritionist Planning Drawer */}
             <aside>
               {selectedStudent ? (
                 <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
@@ -457,8 +603,6 @@ export default function Home() {
                   </div>
 
                   <form onSubmit={handlePublishDiet} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    
-                    {/* Meal dropdown selectors */}
                     <div>
                       <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>🥣 Breakfast Option</label>
                       <select 
@@ -515,14 +659,13 @@ export default function Home() {
                       </select>
                     </div>
 
-                    {/* Prescription / Clinical Notes */}
                     <div>
                       <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
                         🩺 Clinical Notes / Therapeutic Prescriptions
                       </label>
                       <textarea
                         rows={3}
-                        placeholder="Write dynamic therapeutic advice here, e.g. Take 3 liters of water. Supplement with Omega-3."
+                        placeholder="Write therapeutic advice, e.g. Take 3 liters of water."
                         value={nutritionNotes}
                         onChange={(e) => setNutritionNotes(e.target.value)}
                         className="form-input"
@@ -550,10 +693,369 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  🥑 Click on any student or staff member in the registry on the left to begin formulating and publishing custom dietary plans!
+                  🥑 Click on any student or staff member in the registry on the left to begin formulating custom dietary plans!
                 </div>
               )}
             </aside>
+          </div>
+        )}
+
+        {/* --- GLOBAL ADMIN PORTAL --- */}
+        {tab === 'admin-panel' && user.role === 'admin' && (
+          <div>
+            {/* Admin Header SubTabs */}
+            <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h2 style={{ marginBottom: 0 }}>⚙️ Portal Administration Console</h2>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Ultimate full-stack catalog control database synced with Supabase.</span>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  onClick={() => setAdminSubTab('users')} 
+                  className={`btn ${adminSubTab === 'users' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                >
+                  👥 Manage University Users
+                </button>
+                <button 
+                  onClick={() => setAdminSubTab('foods')} 
+                  className={`btn ${adminSubTab === 'foods' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                >
+                  🍎 Manage Foods Database
+                </button>
+              </div>
+            </div>
+
+            {/* --- ADMIN USER MANAGEMENT SUBTAB --- */}
+            {adminSubTab === 'users' && (
+              <div className="dashboard-layout">
+                {/* Left panel: List all users */}
+                <div>
+                  <div className="card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <h3 style={{ margin: 0 }}>👥 Students & Staff Registry ({filteredUsers.length})</h3>
+                      <input
+                        placeholder="Search by name or matric number..."
+                        value={adminUserQuery}
+                        onChange={(e) => setAdminUserQuery(e.target.value)}
+                        className="form-input"
+                        style={{ maxWidth: '280px', padding: '0.5rem 1rem' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {filteredUsers.map((u: any) => (
+                        <div key={u.id} className="food-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem' }}>
+                          <div>
+                            <strong style={{ fontSize: '1.05rem', color: 'var(--dark-bg)' }}>{u.name}</strong>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
+                              <span>🔑 ID: <strong>{u.username}</strong></span>
+                              <span>✉️ {u.email || 'No email'}</span>
+                            </div>
+                          </div>
+                          
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <span className="pill pill-neutral" style={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>{u.role}</span>
+                            <button 
+                              onClick={() => handleEditUserClick(u)} 
+                              className="btn btn-secondary"
+                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteUser(u.id, u.name)} 
+                              className="btn btn-secondary"
+                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: '#fecaca' }}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right panel: Create / Edit user form */}
+                <aside>
+                  <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
+                    <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+                      {userIdToEdit ? '✏️ Edit User Details' : '👤 Register New User'}
+                    </h3>
+
+                    <form onSubmit={handleAdminSaveUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Matric ID / Staff ID</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. FUO/20/0205"
+                          value={adminUserUsername}
+                          onChange={(e) => setAdminUserUsername(e.target.value)}
+                          className="form-input"
+                          required
+                          disabled={!!userIdToEdit}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Full Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. John Doe"
+                          value={adminUserName}
+                          onChange={(e) => setAdminUserName(e.target.value)}
+                          className="form-input"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>University Role</label>
+                        <select
+                          value={adminUserRole}
+                          onChange={(e) => setAdminUserRole(e.target.value)}
+                          className="form-input"
+                          style={{ height: '40px' }}
+                        >
+                          <option value="student">Student</option>
+                          <option value="staff">Staff Member</option>
+                          <option value="nutritionist">Nutritionist</option>
+                          <option value="doctor">Medical Doctor</option>
+                          <option value="admin">Administrator</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email Address</label>
+                        <input
+                          type="email"
+                          placeholder="student@fuo.edu.ng"
+                          value={adminUserEmail}
+                          onChange={(e) => setAdminUserEmail(e.target.value)}
+                          className="form-input"
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                          {userIdToEdit ? '🔑 Reset Password (leave blank to keep current)' : '🔑 Portal Password'}
+                        </label>
+                        <input
+                          type="password"
+                          placeholder="••••••••"
+                          value={adminUserPassword}
+                          onChange={(e) => setAdminUserPassword(e.target.value)}
+                          className="form-input"
+                          required={!userIdToEdit}
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                          {userIdToEdit ? 'Save Changes' : 'Register Account'}
+                        </button>
+                        {userIdToEdit && (
+                          <button 
+                            type="button" 
+                            className="btn btn-secondary" 
+                            onClick={() => {
+                              setUserIdToEdit(null);
+                              setAdminUserUsername('');
+                              setAdminUserName('');
+                              setAdminUserRole('student');
+                              setAdminUserEmail('');
+                              setAdminUserPassword('');
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  </div>
+                </aside>
+              </div>
+            )}
+
+            {/* --- ADMIN FOODS DATABASE MANAGEMENT SUBTAB --- */}
+            {adminSubTab === 'foods' && (
+              <div className="dashboard-layout">
+                {/* Left panel: List all foods */}
+                <div>
+                  <div className="card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <h3 style={{ margin: 0 }}>🍎 Foods Database Catalog ({filteredFoods.length})</h3>
+                      <input
+                        placeholder="Search standard foods..."
+                        value={adminFoodQuery}
+                        onChange={(e) => setAdminFoodQuery(e.target.value)}
+                        className="form-input"
+                        style={{ maxWidth: '280px', padding: '0.5rem 1rem' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {filteredFoods.map((f: any) => (
+                        <div key={f.id} className="food-card" style={{ padding: '1.25rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <strong style={{ fontSize: '1.1rem', color: 'var(--dark-bg)' }}>{f.name}</strong>
+                              <span className="pill pill-neutral" style={{ marginLeft: '0.5rem', fontSize: '0.65rem' }}>{f.category}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button 
+                                onClick={() => handleEditFoodClick(f)} 
+                                className="btn btn-secondary"
+                                style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteFood(f.id, f.name)} 
+                                className="btn btn-secondary"
+                                style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: '#fecaca' }}
+                              >
+                                🗑️ Delete
+                              </button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                            <span>⚡ Calories: {f.calories} kcal</span>
+                            <span>🥩 Protein: {f.protein_g}g</span>
+                            <span>🌾 Carbs: {f.carbs_g}g</span>
+                            <span>🧈 Fat: {f.fat_g}g</span>
+                          </div>
+                          {f.notes && (
+                            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                              Notes: {f.notes}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right panel: Add / Edit food form */}
+                <aside>
+                  <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
+                    <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+                      {foodIdToEdit ? '✏️ Edit Food Profile' : '🍎 Catalog New Food'}
+                    </h3>
+
+                    <form onSubmit={handleAdminSaveFood} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Food Item Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Rice & Beans"
+                          value={adminFoodName}
+                          onChange={(e) => setAdminFoodName(e.target.value)}
+                          className="form-input"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Category</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Carb, Protein, Mixed"
+                          value={adminFoodCategory}
+                          onChange={(e) => setAdminFoodCategory(e.target.value)}
+                          className="form-input"
+                          required
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Calories (kcal)</label>
+                          <input
+                            type="number"
+                            value={adminFoodCalories}
+                            onChange={(e) => setAdminFoodCalories(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Protein (g)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={adminFoodProtein}
+                            onChange={(e) => setAdminFoodProtein(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Carbohydrates (g)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={adminFoodCarbs}
+                            onChange={(e) => setAdminFoodCarbs(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Fat (g)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={adminFoodFat}
+                            onChange={(e) => setAdminFoodFat(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Dietary & Botanical Notes</label>
+                        <input
+                          type="text"
+                          placeholder="Staple cereal porridge..."
+                          value={adminFoodNotes}
+                          onChange={(e) => setAdminFoodNotes(e.target.value)}
+                          className="form-input"
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                          {foodIdToEdit ? 'Save Updates' : 'Add to Catalog'}
+                        </button>
+                        {foodIdToEdit && (
+                          <button 
+                            type="button" 
+                            className="btn btn-secondary" 
+                            onClick={() => {
+                              setFoodIdToEdit(null);
+                              setAdminFoodName('');
+                              setAdminFoodCategory('');
+                              setAdminFoodCalories('');
+                              setAdminFoodProtein('');
+                              setAdminFoodCarbs('');
+                              setAdminFoodFat('');
+                              setAdminFoodNotes('');
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  </div>
+                </aside>
+              </div>
+            )}
 
           </div>
         )}

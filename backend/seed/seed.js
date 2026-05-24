@@ -24,9 +24,9 @@ async function seed() {
     // 2. Hash passwords
     console.log('Hashing passwords...');
     const saltRounds = 10;
-    const studentPw = await bcrypt.hash('student123', saltRounds);
+    const studentPw = await bcrypt.hash('fuo/20/0205', saltRounds);
     const nutritionistPw = await bcrypt.hash('ogunbode12', saltRounds);
-    const adminPw = await bcrypt.hash('Ayomide12', saltRounds);
+    const adminPw = await bcrypt.hash('airborne', saltRounds);
     const doctorPw = await bcrypt.hash('FUOdoctor12', saltRounds);
 
     // 3. Seed users table
@@ -34,6 +34,7 @@ async function seed() {
     const users = [
       { username: 'FUO/20/0205', name: 'Sample Student', role: 'student', email: 'student@fuo.edu.ng', password_hash: studentPw },
       { username: 'profsmogunbode', name: 'Prof SM Ogunbode', role: 'nutritionist', email: 'ogunbode@fuo.edu.ng', password_hash: nutritionistPw },
+      { username: 'kalibest10', name: 'System Administrator', role: 'admin', email: 'kalibest10@gmail.com', password_hash: adminPw },
       { username: 'bello', name: 'Bello Abdulwadud Ayomide', role: 'admin', email: 'bello@fuo.edu.ng', password_hash: adminPw },
       { username: 'fuodoctor', name: 'School Doctor', role: 'doctor', email: 'doctor@fuo.edu.ng', password_hash: doctorPw }
     ];
