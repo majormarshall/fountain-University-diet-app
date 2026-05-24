@@ -21,7 +21,7 @@ router.post('/login', async (req, res) => {
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
-      .eq('username', username);
+      .ilike('username', username);
       
     if (error) {
       console.error('Login database error', error);

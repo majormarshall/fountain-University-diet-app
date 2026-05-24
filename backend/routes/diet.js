@@ -79,7 +79,7 @@ router.get('/:studentUsername', auth, async (req, res) => {
     const { data: students, error: studentError } = await supabase
       .from('users')
       .select('*')
-      .eq('username', studentUsername);
+      .ilike('username', studentUsername);
       
     if (studentError) {
       console.error('Student database lookup error', studentError);
@@ -140,7 +140,7 @@ router.post('/:studentUsername', auth, async (req, res) => {
     const { data: students, error: studentError } = await supabase
       .from('users')
       .select('*')
-      .eq('username', studentUsername);
+      .ilike('username', studentUsername);
       
     if (studentError) {
       return res.status(500).json({ message: 'Database query error' });
