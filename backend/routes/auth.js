@@ -18,10 +18,11 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   
   try {
+    // Query users where username or email matches the input case-insensitively
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
-      .ilike('username', username);
+      .or(`username.ilike."${username}",email.ilike."${username}"`);
       
     if (error) {
       console.error('Login database error', error);

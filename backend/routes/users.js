@@ -67,6 +67,54 @@ router.post('/', auth, adminOnly, async (req, res) => {
   }
 });
 
+// 2b. Bulk Create users (Admin only)
+router.post('/bulk', auth, adminOnly, async (req, res) => {
+  const { users } = req.body;
+  
+  if (!Array.isArray(users) || users.length === 0) {
+    return res.status(400).json({ message: 'Users array is required and cannot be empty.' });
+  }
+  
+  try {
+    const errors = [];
+    const preparedUsers = [];
+    
+    for (let u of users) {
+      if (!u.username || !u.name || !u.role) {
+        errors.push(`User skipped: missing username, name or role.`);
+        continue;
+      }
+      const passwordHash = await bcrypt.hash(u.password || 'fuo123', 10);
+      preparedUsers.push({
+        username: u.username,
+        name: u.name,
+        role: u.role,
+        email: u.email || null,
+        password_hash: passwordHash
+      });
+    }
+    
+    if (preparedUsers.length === 0) {
+      return res.status(400).json({ message: 'No valid users to insert.', errors });
+    }
+    
+    const { data: newUsers, error } = await supabase
+      .from('users')
+      .insert(preparedUsers)
+      .select('id, username, name, role, email');
+      
+    if (error) {
+      console.error('Bulk create database error', error);
+      return res.status(400).json({ message: error.message || 'Failed to insert users.', errors });
+    }
+    
+    res.json({ message: `Successfully onboarded ${newUsers.length} users.`, users: newUsers, errors });
+  } catch (err) {
+    console.error('Bulk create user error', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // 3. Update an existing user (Admin only)
 router.put('/:id', auth, adminOnly, async (req, res) => {
   const { name, role, email, password } = req.body;

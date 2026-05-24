@@ -35,6 +35,12 @@ export default function Home() {
   const [adminUserEmail, setAdminUserEmail] = useState('');
   const [adminUserPassword, setAdminUserPassword] = useState('');
   const [adminUserQuery, setAdminUserQuery] = useState('');
+  
+  // Admin User Onboarding & Filtering States
+  const [adminUserRoleFilter, setAdminUserRoleFilter] = useState<'all' | 'student' | 'staff' | 'clinicians'>('all');
+  const [onboardMethod, setOnboardMethod] = useState<'single' | 'bulk'>('single');
+  const [bulkInputText, setBulkInputText] = useState('');
+  const [bulkIsSubmitting, setBulkIsSubmitting] = useState(false);
 
   // Admin Food CRUD States
   const [foodIdToEdit, setFoodIdToEdit] = useState<string | null>(null);
@@ -106,7 +112,11 @@ export default function Home() {
         setTab('home');
       }
     } catch (err: any) {
-      setLoginError(err.response?.data?.message || 'Invalid Matric ID / Staff ID or password.');
+      if (!err.response) {
+        setLoginError('Could not connect to database server. Please ensure the backend Express app is running (e.g. run "npm run dev" in the backend directory).');
+      } else {
+        setLoginError(err.response?.data?.message || 'Invalid Matric ID / Staff ID or password.');
+      }
     }
   }
 
