@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/auth/:path*",
+      "destination": "/api/backend"
+    },
+    {
+      "source": "/api/users/:path*",
+      "destination": "/api/backend"
+    },
+    {
+      "source": "/api/diet/:path*",
+      "destination": "/api/backend"
+    },
+    {
+      "source": "/api/foods/:path*",
+      "destination": "/api/backend"
+    }
+  ]
+}

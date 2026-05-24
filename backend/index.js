@@ -17,8 +17,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/diet', dietRoutes);
 app.use('/api/foods', foodsRoute);
 
-const PORT = process.env.PORT || 4000;
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log('Server listening on', PORT);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log('Server listening on', PORT);
-});
+module.exports = app;

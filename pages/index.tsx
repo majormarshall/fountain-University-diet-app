@@ -3,7 +3,11 @@ import useSWR from 'swr';
 import axios from 'axios';
 import SickleCellSection from '../components/SickleCellSection';
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE !== undefined
+  ? process.env.NEXT_PUBLIC_API_BASE
+  : (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+      ? ''
+      : 'http://localhost:4000');
 
 export default function Home() {
   const [tab, setTab] = useState<'home' | 'sickle' | 'nutritionist-panel' | 'admin-panel'>('home');
@@ -298,11 +302,82 @@ export default function Home() {
 
   // Filtered Users List for Admin Panel
   const filteredUsers = Array.isArray(allUsers) 
-    ? allUsers.filter((u: any) => 
-        u.name.toLowerCase().includes(adminUserQuery.toLowerCase()) || 
-        u.username.toLowerCase().includes(adminUserQuery.toLowerCase())
-      )
+    ? allUsers.filter((u: any) => {
+        const queryMatch = u.name.toLowerCase().includes(adminUserQuery.toLowerCase()) || 
+                           u.username.toLowerCase().includes(adminUserQuery.toLowerCase());
+        if (!queryMatch) return false;
+        if (adminUserRoleFilter === 'all') return true;
+        if (adminUserRoleFilter === 'student') return u.role === 'student';
+        if (adminUserRoleFilter === 'staff') return u.role === 'staff';
+        if (adminUserRoleFilter === 'clinicians') return u.role === 'nutritionist' || u.role === 'doctor' || u.role === 'admin';
+        return true;
+      })
     : [];
+
+  // Bulk Onboarding execution handler
+  async function handleAdminBulkOnboard(e: React.FormEvent) {
+    e.preventDefault();
+    if (!bulkInputText.trim()) return;
+    
+    setBulkIsSubmitting(true);
+    try {
+      const lines = bulkInputText.split('\n');
+      const usersToOnboard: any[] = [];
+      const validationErrors: string[] = [];
+      
+      lines.forEach((line, idx) => {
+        const cleanLine = line.trim();
+        if (!cleanLine) return; // skip empty lines
+        
+        const parts = cleanLine.split(',').map(p => p.trim());
+        if (parts.length < 3) {
+          validationErrors.push(`Line ${idx + 1}: Missing fields. Expected format: Matric/StaffID, Name, Role`);
+          return;
+        }
+        
+        const [username, name, role, email, password] = parts;
+        const validRoles = ['student', 'staff', 'nutritionist', 'doctor', 'admin'];
+        if (!validRoles.includes(role.toLowerCase())) {
+          validationErrors.push(`Line ${idx + 1}: Invalid role "${role}". Valid: student, staff, nutritionist, doctor, admin`);
+          return;
+        }
+        
+        usersToOnboard.push({
+          username,
+          name,
+          role: role.toLowerCase(),
+          email: email || '',
+          password: password || 'fuo123'
+        });
+      });
+      
+      if (validationErrors.length > 0) {
+        alert("Validation Errors:\n" + validationErrors.join("\n"));
+        setBulkIsSubmitting(false);
+        return;
+      }
+      
+      if (usersToOnboard.length === 0) {
+        alert("No valid users detected in input.");
+        setBulkIsSubmitting(false);
+        return;
+      }
+      
+      const res = await axios.post(
+        `${API_BASE}/api/users/bulk`,
+        { users: usersToOnboard },
+        getHeaders()
+      );
+      
+      alert(res.data.message || `Successfully onboarded ${usersToOnboard.length} users!`);
+      setBulkInputText('');
+      mutateUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to bulk onboard users.');
+    } finally {
+      setBulkIsSubmitting(false);
+    }
+  }
 
   // Filtered Foods List for Admin Panel
   const filteredFoods = Array.isArray(foods)
@@ -726,7 +801,7 @@ export default function Home() {
                   className={`btn ${adminSubTab === 'users' ? 'btn-primary' : 'btn-secondary'}`}
                   style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                 >
-                  👥 Manage University Users
+                  👥 Student & Staff Onboarding Space
                 </button>
                 <button 
                   onClick={() => setAdminSubTab('foods')} 
@@ -745,7 +820,7 @@ export default function Home() {
                 <div>
                   <div className="card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <h3 style={{ margin: 0 }}>👥 Students & Staff Registry ({filteredUsers.length})</h3>
+                      <h3 style={{ margin: 0 }}>👥 Onboarded Registry ({filteredUsers.length})</h3>
                       <input
                         placeholder="Search by name or matric number..."
                         value={adminUserQuery}
@@ -753,6 +828,26 @@ export default function Home() {
                         className="form-input"
                         style={{ maxWidth: '280px', padding: '0.5rem 1rem' }}
                       />
+                    </div>
+
+                    {/* Role Filter Tabs */}
+                    <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1.25rem', flexWrap: 'wrap', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.75rem' }}>
+                      {(['all', 'student', 'staff', 'clinicians'] as const).map((r) => (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => setAdminUserRoleFilter(r)}
+                          className={`tab-btn ${adminUserRoleFilter === r ? 'active' : ''}`}
+                          style={{
+                            padding: '0.35rem 0.75rem',
+                            fontSize: '0.75rem',
+                            textTransform: 'capitalize',
+                            borderRadius: 'var(--radius-sm)'
+                          }}
+                        >
+                          {r === 'all' ? 'All Roles' : r === 'clinicians' ? 'Admins & Clinicians' : r === 'staff' ? 'Staff Members' : 'Students'}
+                        </button>
+                      ))}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -793,98 +888,148 @@ export default function Home() {
                 <aside>
                   <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
                     <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
-                      {userIdToEdit ? '✏️ Edit User Details' : '👤 Register New User'}
+                      {userIdToEdit ? '✏️ Edit User Details' : '👤 Onboarding Portal'}
                     </h3>
 
-                    <form onSubmit={handleAdminSaveUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Matric ID / Staff ID</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. FUO/20/0205"
-                          value={adminUserUsername}
-                          onChange={(e) => setAdminUserUsername(e.target.value)}
-                          className="form-input"
-                          required
-                          disabled={!!userIdToEdit}
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Full Name</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. John Doe"
-                          value={adminUserName}
-                          onChange={(e) => setAdminUserName(e.target.value)}
-                          className="form-input"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>University Role</label>
-                        <select
-                          value={adminUserRole}
-                          onChange={(e) => setAdminUserRole(e.target.value)}
-                          className="form-input"
-                          style={{ height: '40px' }}
+                    {!userIdToEdit && (
+                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px dashed var(--light-border)', paddingBottom: '0.75rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => setOnboardMethod('single')}
+                          className={`btn ${onboardMethod === 'single' ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '36px' }}
                         >
-                          <option value="student">Student</option>
-                          <option value="staff">Staff Member</option>
-                          <option value="nutritionist">Nutritionist</option>
-                          <option value="doctor">Medical Doctor</option>
-                          <option value="admin">Administrator</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email Address</label>
-                        <input
-                          type="email"
-                          placeholder="student@fuo.edu.ng"
-                          value={adminUserEmail}
-                          onChange={(e) => setAdminUserEmail(e.target.value)}
-                          className="form-input"
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                          {userIdToEdit ? '🔑 Reset Password (leave blank to keep current)' : '🔑 Portal Password'}
-                        </label>
-                        <input
-                          type="password"
-                          placeholder="••••••••"
-                          value={adminUserPassword}
-                          onChange={(e) => setAdminUserPassword(e.target.value)}
-                          className="form-input"
-                          required={!userIdToEdit}
-                        />
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                          {userIdToEdit ? 'Save Changes' : 'Register Account'}
+                          👤 Single Account
                         </button>
-                        {userIdToEdit && (
-                          <button 
-                            type="button" 
-                            className="btn btn-secondary" 
-                            onClick={() => {
-                              setUserIdToEdit(null);
-                              setAdminUserUsername('');
-                              setAdminUserName('');
-                              setAdminUserRole('student');
-                              setAdminUserEmail('');
-                              setAdminUserPassword('');
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => setOnboardMethod('bulk')}
+                          className={`btn ${onboardMethod === 'bulk' ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '36px' }}
+                        >
+                          📂 Bulk Onboard
+                        </button>
                       </div>
-                    </form>
+                    )}
+
+                    {onboardMethod === 'single' || userIdToEdit ? (
+                      <form onSubmit={handleAdminSaveUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Matric ID / Staff ID</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. FUO/20/0205"
+                            value={adminUserUsername}
+                            onChange={(e) => setAdminUserUsername(e.target.value)}
+                            className="form-input"
+                            required
+                            disabled={!!userIdToEdit}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Full Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. John Doe"
+                            value={adminUserName}
+                            onChange={(e) => setAdminUserName(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>University Role</label>
+                          <select
+                            value={adminUserRole}
+                            onChange={(e) => setAdminUserRole(e.target.value)}
+                            className="form-input"
+                            style={{ height: '40px' }}
+                          >
+                            <option value="student">Student</option>
+                            <option value="staff">Staff Member</option>
+                            <option value="nutritionist">Nutritionist</option>
+                            <option value="doctor">Medical Doctor</option>
+                            <option value="admin">Administrator</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email Address</label>
+                          <input
+                            type="email"
+                            placeholder="student@fuo.edu.ng"
+                            value={adminUserEmail}
+                            onChange={(e) => setAdminUserEmail(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                            {userIdToEdit ? '🔑 Reset Password (leave blank to keep current)' : '🔑 Portal Password'}
+                          </label>
+                          <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={adminUserPassword}
+                            onChange={(e) => setAdminUserPassword(e.target.value)}
+                            className="form-input"
+                            required={!userIdToEdit}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                            {userIdToEdit ? 'Save Changes' : 'Register Account'}
+                          </button>
+                          {userIdToEdit && (
+                            <button 
+                              type="button" 
+                              className="btn btn-secondary" 
+                              onClick={() => {
+                                setUserIdToEdit(null);
+                                setAdminUserUsername('');
+                                setAdminUserName('');
+                                setAdminUserRole('student');
+                                setAdminUserEmail('');
+                                setAdminUserPassword('');
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleAdminBulkOnboard} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                            Bulk Onboarding Data (CSV)
+                          </label>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem', lineHeight: '1.3' }}>
+                            Paste user records, one per line using format:<br/>
+                            <code>ID, Full Name, Role, [Email], [Password]</code><br/>
+                            <em>Example:</em><br/>
+                            <code>FUO/20/0999, Alice Johnson, student, alice@fuo.edu.ng, secret123</code>
+                          </span>
+                          <textarea
+                            rows={10}
+                            placeholder="FUO/20/0999, Alice Johnson, student, alice@fuo.edu.ng, secret123&#10;FUO/staff/111, Dr Mary, staff, mary@fuo.edu.ng, mary789"
+                            value={bulkInputText}
+                            onChange={(e) => setBulkInputText(e.target.value)}
+                            className="form-input"
+                            style={{ fontFamily: 'monospace', fontSize: '0.75rem', resize: 'vertical' }}
+                            required
+                          />
+                        </div>
+
+                        <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }} disabled={bulkIsSubmitting}>
+                          {bulkIsSubmitting ? 'Onboarding...' : '🚀 Execute Bulk Onboarding'}
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </aside>
               </div>
