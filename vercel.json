@@ -17,5 +17,15 @@
       "source": "/api/foods/:path*",
       "destination": "/api/backend"
     }
-  ]
+  ],
+  "experimentalServices": {
+    "frontend": {
+      "routePrefix": "/",
+      "framework": "nextjs"
+    },
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/_/backend"
+    }
+  }
 }
