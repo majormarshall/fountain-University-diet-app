@@ -17,7 +17,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/diet', dietRoutes);
 app.use('/api/foods', foodsRoute);
 
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+if (!process.env.NEXT_RUNTIME && (process.env.NODE_ENV !== 'production' || !process.env.VERCEL)) {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log('Server listening on', PORT);
