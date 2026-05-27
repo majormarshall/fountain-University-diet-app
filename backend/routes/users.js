@@ -45,14 +45,14 @@ router.get('/', auth, adminOnly, async (req, res) => {
 
 // 2. Create a new user (Admin only)
 router.post('/', auth, adminOnly, async (req, res) => {
-  const { username, name, role, email, password } = req.body;
+  const { username, name, role, email, password, meta } = req.body;
   
   try {
     const passwordHash = await bcrypt.hash(password || 'fuo123', 10);
     const { data: newUser, error } = await supabase
       .from('users')
-      .insert([{ username, name, role, email, password_hash: passwordHash }])
-      .select('id, username, name, role, email')
+      .insert([{ username, name, role, email, password_hash: passwordHash, meta: meta || {} }])
+      .select('id, username, name, role, email, meta')
       .single();
       
     if (error) {
@@ -90,7 +90,8 @@ router.post('/bulk', auth, adminOnly, async (req, res) => {
         name: u.name,
         role: u.role,
         email: u.email || null,
-        password_hash: passwordHash
+        password_hash: passwordHash,
+        meta: u.meta || {}
       });
     }
     
@@ -101,7 +102,7 @@ router.post('/bulk', auth, adminOnly, async (req, res) => {
     const { data: newUsers, error } = await supabase
       .from('users')
       .insert(preparedUsers)
-      .select('id, username, name, role, email');
+      .select('id, username, name, role, email, meta');
       
     if (error) {
       console.error('Bulk create database error', error);
@@ -117,19 +118,22 @@ router.post('/bulk', auth, adminOnly, async (req, res) => {
 
 // 3. Update an existing user (Admin only)
 router.put('/:id', auth, adminOnly, async (req, res) => {
-  const { name, role, email, password } = req.body;
+  const { name, role, email, password, meta } = req.body;
   const updates = { name, role, email };
   
   try {
     if (password) {
       updates.password_hash = await bcrypt.hash(password, 10);
     }
+    if (meta !== undefined) {
+      updates.meta = meta;
+    }
     
     const { data: updatedUser, error } = await supabase
       .from('users')
       .update(updates)
       .eq('id', req.params.id)
-      .select('id, username, name, role, email')
+      .select('id, username, name, role, email, meta')
       .single();
       
     if (error) {

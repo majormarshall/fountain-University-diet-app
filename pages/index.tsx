@@ -38,6 +38,7 @@ export default function Home() {
   const [adminUserRole, setAdminUserRole] = useState('student');
   const [adminUserEmail, setAdminUserEmail] = useState('');
   const [adminUserPassword, setAdminUserPassword] = useState('');
+  const [adminUserLevel, setAdminUserLevel] = useState('100 Level');
   const [adminUserQuery, setAdminUserQuery] = useState('');
   
   // Admin User Onboarding & Filtering States
@@ -194,7 +195,8 @@ export default function Home() {
         name: adminUserName,
         role: adminUserRole,
         email: adminUserEmail,
-        password: adminUserPassword
+        password: adminUserPassword,
+        meta: adminUserRole === 'student' ? { level: adminUserLevel } : {}
       };
 
       if (userIdToEdit) {
@@ -212,6 +214,7 @@ export default function Home() {
       setAdminUserRole('student');
       setAdminUserEmail('');
       setAdminUserPassword('');
+      setAdminUserLevel('100 Level');
       
       mutateUsers();
     } catch (err: any) {
@@ -226,6 +229,7 @@ export default function Home() {
     setAdminUserRole(u.role);
     setAdminUserEmail(u.email || '');
     setAdminUserPassword(''); // blank for no password change
+    setAdminUserLevel(u.meta?.level || '100 Level');
   }
 
   async function handleDeleteUser(id: string, name: string) {
@@ -594,10 +598,16 @@ export default function Home() {
                     <span>ID / Username</span>
                     <strong>{user.username}</strong>
                   </div>
-                  <div className="nutrient-row" style={{ borderBottom: 'none' }}>
+                  <div className="nutrient-row" style={{ borderBottom: user.role === 'student' ? '1px solid var(--light-border)' : 'none' }}>
                     <span>Role Type</span>
                     <strong style={{ color: 'var(--primary)', textTransform: 'capitalize' }}>{user.role}</strong>
                   </div>
+                  {user.role === 'student' && (
+                    <div className="nutrient-row" style={{ borderBottom: 'none' }}>
+                      <span>Academic Level</span>
+                      <strong style={{ color: 'var(--primary)' }}>{user.meta?.level || '100 Level'}</strong>
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>
@@ -939,7 +949,7 @@ export default function Home() {
                           />
                         </div>
 
-                        <div>
+                         <div>
                           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>University Role</label>
                           <select
                             value={adminUserRole}
@@ -954,6 +964,25 @@ export default function Home() {
                             <option value="admin">Administrator</option>
                           </select>
                         </div>
+
+                        {adminUserRole === 'student' && (
+                          <div>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Academic Level</label>
+                            <select
+                              value={adminUserLevel}
+                              onChange={(e) => setAdminUserLevel(e.target.value)}
+                              className="form-input"
+                              style={{ height: '40px' }}
+                            >
+                              <option value="100 Level">100 Level</option>
+                              <option value="200 Level">200 Level</option>
+                              <option value="300 Level">300 Level</option>
+                              <option value="400 Level">400 Level</option>
+                              <option value="500 Level">500 Level</option>
+                              <option value="Postgraduate">Postgraduate</option>
+                            </select>
+                          </div>
+                        )}
 
                         <div>
                           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email Address</label>
@@ -995,6 +1024,7 @@ export default function Home() {
                                 setAdminUserRole('student');
                                 setAdminUserEmail('');
                                 setAdminUserPassword('');
+                                setAdminUserLevel('100 Level');
                               }}
                             >
                               Cancel
