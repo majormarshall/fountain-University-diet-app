@@ -47,7 +47,7 @@ export default function Home() {
 
   // SWR Helpers with Auth Headers
   const getHeaders = () => (token ? { headers: { Authorization: `Bearer ${token}` } } : {});
-  const authenticatedFetcher = (url: string) =>
+  const authenticatedFetcher = (url: string) => 
     axios.get(`${API_BASE}${url}`, getHeaders()).then(r => r.data);
 
   // Fetch university users (students/staff) for nutritionist panel
@@ -185,7 +185,7 @@ export default function Home() {
 
           {loginError && (
             <div style={{ background: 'var(--danger-light)', color: 'var(--danger)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', fontSize: '0.85rem', fontWeight: 600, border: '1px solid #fee2e2' }}>
-              Ã¢Å¡Â Ã¯Â¸Â {loginError}
+              ⚠️ {loginError}
             </div>
           )}
 
@@ -210,7 +210,7 @@ export default function Home() {
               </label>
               <input
                 type="password"
-                placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
+                placeholder="••••••••"
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 className="form-input"
@@ -228,13 +228,13 @@ export default function Home() {
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>QUICK DEMO ACCELERATORS:</span>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
               <button onClick={() => fillDemo('student')} className="btn btn-secondary" style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}>
-                Ã°Å¸â€˜Â¤ Student
+                👤 Student
               </button>
               <button onClick={() => fillDemo('nutritionist')} className="btn btn-secondary" style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}>
-                Ã°Å¸Â¥â€˜ Nutritionist
+                🥑 Nutritionist
               </button>
               <button onClick={() => fillDemo('admin')} className="btn btn-secondary" style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}>
-                Ã¢Å¡â„¢Ã¯Â¸Â Admin
+                ⚙️ Admin
               </button>
             </div>
           </div>
@@ -287,20 +287,20 @@ export default function Home() {
             onClick={() => setTab('home')} 
             className={`tab-btn ${tab === 'home' ? 'active' : ''}`}
           >
-            Ã°Å¸ÂÂ  Wellness Hub
+            🏠 Wellness Hub
           </button>
           <button 
             onClick={() => setTab('sickle')} 
             className={`tab-btn ${tab === 'sickle' ? 'active' : ''}`}
           >
-            Ã°Å¸Â©Â¸ Sickle Cell Diet
+            🩸 Sickle Cell Diet
           </button>
           {(user.role === 'nutritionist' || user.role === 'admin') && (
             <button 
               onClick={() => setTab('nutritionist-panel')} 
               className={`tab-btn ${tab === 'nutritionist-panel' ? 'active' : ''}`}
             >
-              Ã°Å¸Â¥â€˜ Nutritionist Control Panel
+              🥑 Nutritionist Control Panel
             </button>
           )}
           {user.role === 'admin' && (
@@ -309,11 +309,11 @@ export default function Home() {
               className="tab-btn"
               style={{ textDecoration: 'none', color: 'var(--primary)', fontWeight: 700 }}
             >
-              Ã¢Å¡â„¢Ã¯Â¸Â Admin Console Ã¢â€ â€”
+              ⚙️ Admin Console ↗
             </a>
           )}
           <button onClick={handleLogout} className="tab-btn" style={{ color: 'var(--danger)' }}>
-            Ã°Å¸Å¡Âª Logout
+            🚪 Logout
           </button>
         </nav>
       </header>
@@ -332,10 +332,10 @@ export default function Home() {
                       <div key={plan.id} style={{ border: '1px solid var(--primary-glow)', background: 'var(--primary-light)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                           <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>
-                            Ã°Å¸â€œâ€¦ Prescribed: {new Date(plan.date).toLocaleDateString()}
+                            📅 Prescribed: {new Date(plan.date).toLocaleDateString()}
                           </span>
                           {plan.forSickleCell && (
-                            <span className="pill pill-success" style={{ border: '1px solid #a7f3d0' }}>Ã°Å¸Â©Â¸ Optimized for Sickle Cell Guard</span>
+                            <span className="pill pill-success" style={{ border: '1px solid #a7f3d0' }}>🩸 Optimized for Sickle Cell Guard</span>
                           )}
                         </div>
 
@@ -348,7 +348,7 @@ export default function Home() {
                               </h4>
                               {meal.items?.map((item: any, i: number) => (
                                 <div key={i} style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                  Ã°Å¸ÂÂ½Ã¯Â¸Â {item.food}
+                                  🍽️ {item.food}
                                 </div>
                               ))}
                             </div>
@@ -359,7 +359,7 @@ export default function Home() {
                         {plan.notes && (
                           <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px dashed var(--light-border)' }}>
                             <h5 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--dark-bg)', marginBottom: '0.25rem' }}>
-                              Ã°Å¸Â©Âº Clinical Prescription / Nutritionist Instructions:
+                              🩺 Clinical Prescription / Nutritionist Instructions:
                             </h5>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontStyle: 'italic', paddingLeft: '0.5rem', borderLeft: '3px solid var(--primary)' }}>
                               "{plan.notes}"
@@ -371,7 +371,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '3rem 2rem', color: 'var(--text-muted)' }}>
-                    Ã°Å¸Â¥Â£ <strong>No personalized diets assigned yet.</strong><br/>
+                    🥣 <strong>No personalized diets assigned yet.</strong><br/>
                     Our university nutritionist has not published a customized diet plan for your account yet. You can explore standard wellness information or cataloged foods in the tabs above!
                   </div>
                 )}
@@ -387,7 +387,7 @@ export default function Home() {
 
             <aside>
               <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
-                <h3>Ã°Å¸ÂÂ« Student / Staff Details</h3>
+                <h3>🏫 Student / Staff Details</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
                   <div className="nutrient-row">
                     <span>Full Name</span>
@@ -415,7 +415,7 @@ export default function Home() {
                         fontWeight: 800
                       }}>
                         {user.meta.genotype}
-                        {isSCDGenotype(user.meta.genotype) ? ' Ã°Å¸Â©Â¸' : ' Ã¢Å“â€¦'}
+                        {isSCDGenotype(user.meta.genotype) ? ' 🩸' : ' ✅'}
                       </strong>
                     </div>
                   )}
@@ -431,7 +431,7 @@ export default function Home() {
                       background: '#fef2f2', border: '1px solid #fecaca',
                       borderRadius: '8px', fontSize: '0.78rem', color: '#991b1b', fontWeight: 600
                     }}>
-                      Ã°Å¸Â©Â¸ Sickle Cell Patient Ã¢â‚¬â€ your diet plans are specially optimized for SCD management.
+                      🩸 Sickle Cell Patient — your diet plans are specially optimized for SCD management.
                     </div>
                   )}
                   {(!user.meta?.genotype) && (
@@ -440,7 +440,7 @@ export default function Home() {
                       background: '#fffbeb', border: '1px solid #fde68a',
                       borderRadius: '8px', fontSize: '0.78rem', color: '#92400e'
                     }}>
-                      Ã¢Å¡Â Ã¯Â¸Â Genotype not recorded. Contact admin to update your health profile.
+                      ⚠️ Genotype not recorded. Contact admin to update your health profile.
                     </div>
                   )}
                 </div>
@@ -485,11 +485,11 @@ export default function Home() {
                               <span>ID: {u.username}</span>
                               {u.meta?.genotype && (
                                 <span style={{ fontWeight: 700, color: isSCD ? '#dc2626' : '#059669' }}>
-                                  {isSCD ? 'Ã°Å¸Â©Â¸' : 'Ã¢Å“â€¦'} {u.meta.genotype}
+                                  {isSCD ? '🩸' : '✅'} {u.meta.genotype}
                                 </span>
                               )}
                               {u.meta?.bloodGroup && (
-                                <span style={{ color: '#6366f1' }}>Ã°Å¸Â©Âº {u.meta.bloodGroup}</span>
+                                <span style={{ color: '#6366f1' }}>🩺 {u.meta.bloodGroup}</span>
                               )}
                             </div>
                           </div>
@@ -513,15 +513,15 @@ export default function Home() {
                       {selectedStudentPlans.map((plan: any) => (
                         <div key={plan.id} style={{ border: '1px solid var(--light-border)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                            <span>Ã°Å¸â€œâ€¦ Published: {new Date(plan.date).toLocaleString()}</span>
-                            {plan.forSickleCell && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Ã°Å¸Â©Â¸ Sickle Cell Guard</span>}
+                            <span>📅 Published: {new Date(plan.date).toLocaleString()}</span>
+                            {plan.forSickleCell && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>🩸 Sickle Cell Guard</span>}
                           </div>
                           
                           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                             {plan.meals?.map((m: any, idx: number) => (
                               <div key={idx} style={{ background: '#f8fafc', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>{m.name}</span>
-                                <strong style={{ fontSize: '0.85rem' }}>{m.items?.[0]?.food || 'Ã¢â‚¬â€'}</strong>
+                                <strong style={{ fontSize: '0.85rem' }}>{m.items?.[0]?.food || '—'}</strong>
                               </div>
                             ))}
                           </div>
@@ -546,7 +546,7 @@ export default function Home() {
               {selectedStudent ? (
                 <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
                   <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-                    Ã°Å¸Â¥â€” Prescribe Diet Plan
+                    🥗 Prescribe Diet Plan
                   </h3>
 
                   {/* Patient Health Profile Summary */}
@@ -560,14 +560,14 @@ export default function Home() {
                           color: isSCDGenotype(selectedStudent.meta.genotype) ? '#991b1b' : '#166534',
                           border: `1px solid ${isSCDGenotype(selectedStudent.meta.genotype) ? '#fca5a5' : '#86efac'}`
                         }}>
-                          {isSCDGenotype(selectedStudent.meta.genotype) ? 'Ã°Å¸Â©Â¸ ' : 'Ã¢Å“â€¦ '}Genotype: {selectedStudent.meta.genotype}
+                          {isSCDGenotype(selectedStudent.meta.genotype) ? '🩸 ' : '✅ '}Genotype: {selectedStudent.meta.genotype}
                         </span>
                       ) : (
-                        <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#fef9c3', color: '#854d0e', border: '1px solid #fde047', fontWeight: 600 }}>Ã¢Å¡Â Ã¯Â¸Â Genotype Unknown</span>
+                        <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#fef9c3', color: '#854d0e', border: '1px solid #fde047', fontWeight: 600 }}>⚠️ Genotype Unknown</span>
                       )}
                       {selectedStudent.meta?.bloodGroup && (
                         <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#ede9fe', color: '#5b21b6', border: '1px solid #c4b5fd', fontWeight: 600 }}>
-                          Ã°Å¸Â©Âº {selectedStudent.meta.bloodGroup}
+                          🩺 {selectedStudent.meta.bloodGroup}
                         </span>
                       )}
                       <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', textTransform: 'capitalize' }}>
@@ -576,14 +576,14 @@ export default function Home() {
                     </div>
                     {isSCDGenotype(selectedStudent.meta?.genotype || '') && (
                       <div style={{ marginTop: '0.5rem', fontSize: '0.73rem', color: '#991b1b', fontWeight: 600 }}>
-                        Ã¢Å¡Â Ã¯Â¸Â Sickle Cell Patient Ã¢â‚¬â€ SCD-safe foods auto-filtered
+                        ⚠️ Sickle Cell Patient — SCD-safe foods auto-filtered
                       </div>
                     )}
                   </div>
 
                   <form onSubmit={handlePublishDiet} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
 
-                    {/* SCD toggle Ã¢â‚¬â€ auto-enabled for SS/SC, manual for others */}
+                    {/* SCD toggle — auto-enabled for SS/SC, manual for others */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: forSickleCell ? '#ecfdf5' : '#f8fafc', borderRadius: '8px', border: `1px solid ${forSickleCell ? '#a7f3d0' : '#e2e8f0'}` }}>
                       <input
                         type="checkbox"
@@ -593,7 +593,7 @@ export default function Home() {
                         style={{ cursor: 'pointer', accentColor: '#059669' }}
                       />
                       <label htmlFor="sc_opt" style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem', color: forSickleCell ? '#065f46' : '#475569' }}>
-                        Ã°Å¸Â©Â¸ Optimize for Sickle Cell Guard
+                        🩸 Optimize for Sickle Cell Guard
                         {isSCDGenotype(selectedStudent.meta?.genotype || '') && (
                           <span style={{ fontSize: '0.68rem', marginLeft: '0.3rem', color: '#dc2626' }}>(auto)</span>
                         )}
@@ -601,28 +601,28 @@ export default function Home() {
                     </div>
 
                     <NigerianFoodPicker
-                      label="Ã°Å¸Â¥Â£ Breakfast"
+                      label="🥣 Breakfast"
                       value={breakfastItem}
                       onChange={setBreakfastItem}
                       scdMode={forSickleCell}
                     />
 
                     <NigerianFoodPicker
-                      label="Ã°Å¸Ââ€º Lunch"
+                      label="🍛 Lunch"
                       value={lunchItem}
                       onChange={setLunchItem}
                       scdMode={forSickleCell}
                     />
 
                     <NigerianFoodPicker
-                      label="Ã°Å¸ÂÂ² Dinner"
+                      label="🍲 Dinner"
                       value={dinnerItem}
                       onChange={setDinnerItem}
                       scdMode={forSickleCell}
                     />
 
                     <NigerianFoodPicker
-                      label="Ã°Å¸ÂÅ½ Healthy Snack"
+                      label="🍎 Healthy Snack"
                       value={snacksItem}
                       onChange={setSnacksItem}
                       scdMode={forSickleCell}
@@ -630,7 +630,7 @@ export default function Home() {
 
                     <div>
                       <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                        Ã°Å¸Â©Âº Clinical Notes / Therapeutic Prescriptions
+                        🩺 Clinical Notes / Therapeutic Prescriptions
                       </label>
                       <textarea
                         rows={3}
@@ -651,7 +651,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  Ã°Å¸Â¥â€˜ Click on any student or staff member in the registry on the left to begin formulating custom dietary plans!
+                  🥑 Click on any student or staff member in the registry on the left to begin formulating custom dietary plans!
                 </div>
               )}
             </aside>
@@ -659,7 +659,6 @@ export default function Home() {
         )}
 
       </main>
-
       {/* Footer */}
       <footer style={{
         textAlign: 'center',
