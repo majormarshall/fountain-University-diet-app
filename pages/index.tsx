@@ -40,6 +40,8 @@ export default function Home() {
   const [adminUserEmail, setAdminUserEmail] = useState('');
   const [adminUserPassword, setAdminUserPassword] = useState('');
   const [adminUserLevel, setAdminUserLevel] = useState('100 Level');
+  const [adminUserGenotype, setAdminUserGenotype] = useState('');
+  const [adminUserBloodGroup, setAdminUserBloodGroup] = useState('');
   const [adminUserQuery, setAdminUserQuery] = useState('');
   
   // Admin User Onboarding & Filtering States
@@ -83,13 +85,13 @@ export default function Home() {
 
   // Fetch logged in student's diet plans
   const { data: studentPlans } = useSWR(
-    user && (user.role === 'student' || user.role === 'doctor') ? `/api/diet/${user.username}` : null,
+    user && (user.role === 'student' || user.role === 'doctor') ? `/api/diet/${encodeURIComponent(user.username)}` : null,
     authenticatedFetcher
   );
 
   // Fetch selected student's plans (for nutritionist detail view)
   const { data: selectedStudentPlans, mutate: mutateSelectedStudentPlans } = useSWR(
-    selectedStudent ? `/api/diet/${selectedStudent.username}` : null,
+    selectedStudent ? `/api/diet/${encodeURIComponent(selectedStudent.username)}` : null,
     authenticatedFetcher
   );
 
@@ -163,7 +165,7 @@ export default function Home() {
 
     try {
       await axios.post(
-        `${API_BASE}/api/diet/${selectedStudent.username}`,
+        `${API_BASE}/api/diet/${encodeURIComponent(selectedStudent.username)}`,
         {
           meals,
           notes: nutritionNotes,
@@ -187,17 +189,27 @@ export default function Home() {
     }
   }
 
+  // Helper: is this genotype a sickle cell patient?
+  function isSCDGenotype(genotype: string) {
+    return genotype === 'SS' || genotype === 'SC';
+  }
+
   // Admin User Save / Update
   async function handleAdminSaveUser(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const meta: any = {};
+      if (adminUserRole === 'student') meta.level = adminUserLevel;
+      if (adminUserGenotype) meta.genotype = adminUserGenotype;
+      if (adminUserBloodGroup) meta.bloodGroup = adminUserBloodGroup;
+
       const payload = {
         username: adminUserUsername,
         name: adminUserName,
         role: adminUserRole,
         email: adminUserEmail,
         password: adminUserPassword,
-        meta: adminUserRole === 'student' ? { level: adminUserLevel } : {}
+        meta
       };
 
       if (userIdToEdit) {
@@ -216,6 +228,8 @@ export default function Home() {
       setAdminUserEmail('');
       setAdminUserPassword('');
       setAdminUserLevel('100 Level');
+      setAdminUserGenotype('');
+      setAdminUserBloodGroup('');
       
       mutateUsers();
     } catch (err: any) {
@@ -231,6 +245,8 @@ export default function Home() {
     setAdminUserEmail(u.email || '');
     setAdminUserPassword(''); // blank for no password change
     setAdminUserLevel(u.meta?.level || '100 Level');
+    setAdminUserGenotype(u.meta?.genotype || '');
+    setAdminUserBloodGroup(u.meta?.bloodGroup || '');
   }
 
   async function handleDeleteUser(id: string, name: string) {
@@ -621,14 +637,50 @@ export default function Home() {
                     <span>ID / Username</span>
                     <strong>{user.username}</strong>
                   </div>
-                  <div className="nutrient-row" style={{ borderBottom: user.role === 'student' ? '1px solid var(--light-border)' : 'none' }}>
+                  <div className="nutrient-row">
                     <span>Role Type</span>
                     <strong style={{ color: 'var(--primary)', textTransform: 'capitalize' }}>{user.role}</strong>
                   </div>
                   {user.role === 'student' && (
-                    <div className="nutrient-row" style={{ borderBottom: 'none' }}>
+                    <div className="nutrient-row">
                       <span>Academic Level</span>
                       <strong style={{ color: 'var(--primary)' }}>{user.meta?.level || '100 Level'}</strong>
+                    </div>
+                  )}
+                  {user.meta?.genotype && (
+                    <div className="nutrient-row">
+                      <span>Genotype</span>
+                      <strong style={{
+                        color: isSCDGenotype(user.meta.genotype) ? '#dc2626' : '#059669',
+                        fontWeight: 800
+                      }}>
+                        {user.meta.genotype}
+                        {isSCDGenotype(user.meta.genotype) ? ' 🩸' : ' ✅'}
+                      </strong>
+                    </div>
+                  )}
+                  {user.meta?.bloodGroup && (
+                    <div className="nutrient-row">
+                      <span>Blood Group</span>
+                      <strong style={{ color: 'var(--primary)' }}>{user.meta.bloodGroup}</strong>
+                    </div>
+                  )}
+                  {user.meta?.genotype && isSCDGenotype(user.meta.genotype) && (
+                    <div style={{
+                      marginTop: '0.5rem', padding: '0.6rem 0.8rem',
+                      background: '#fef2f2', border: '1px solid #fecaca',
+                      borderRadius: '8px', fontSize: '0.78rem', color: '#991b1b', fontWeight: 600
+                    }}>
+                      🩸 Sickle Cell Patient — your diet plans are specially optimized for SCD management.
+                    </div>
+                  )}
+                  {(!user.meta?.genotype) && (
+                    <div style={{
+                      marginTop: '0.5rem', padding: '0.6rem 0.8rem',
+                      background: '#fffbeb', border: '1px solid #fde68a',
+                      borderRadius: '8px', fontSize: '0.78rem', color: '#92400e'
+                    }}>
+                      ⚠️ Genotype not recorded. Contact admin to update your health profile.
                     </div>
                   )}
                 </div>
@@ -649,26 +701,46 @@ export default function Home() {
                 </p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-                  {Array.isArray(allUsers) && allUsers.map((u: any) => (
-                    <div 
-                      key={u.id} 
-                      onClick={() => setSelectedStudent(u)}
-                      className="food-card"
-                      style={{ 
-                        cursor: 'pointer', 
-                        borderColor: selectedStudent?.id === u.id ? 'var(--primary)' : 'var(--light-border)',
-                        background: selectedStudent?.id === u.id ? 'var(--primary-light)' : 'white'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: '1rem' }}>{u.name}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ID: {u.username}</div>
+                  {Array.isArray(allUsers) && allUsers.map((u: any) => {
+                    const isSCD = u.meta?.genotype && isSCDGenotype(u.meta.genotype);
+                    return (
+                      <div 
+                        key={u.id} 
+                        onClick={() => {
+                          setSelectedStudent(u);
+                          // Auto-enable SCD mode if patient has SS or SC genotype
+                          setForSickleCell(!!isSCD);
+                        }}
+                        className="food-card"
+                        style={{ 
+                          cursor: 'pointer', 
+                          borderColor: selectedStudent?.id === u.id ? 'var(--primary)' : isSCD ? '#fca5a5' : 'var(--light-border)',
+                          background: selectedStudent?.id === u.id ? 'var(--primary-light)' : isSCD ? '#fff5f5' : 'white'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '1rem' }}>{u.name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.15rem' }}>
+                              <span>ID: {u.username}</span>
+                              {u.meta?.genotype && (
+                                <span style={{ fontWeight: 700, color: isSCD ? '#dc2626' : '#059669' }}>
+                                  {isSCD ? '🩸' : '✅'} {u.meta.genotype}
+                                </span>
+                              )}
+                              {u.meta?.bloodGroup && (
+                                <span style={{ color: '#6366f1' }}>🩺 {u.meta.bloodGroup}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                            <span className="pill pill-neutral" style={{ textTransform: 'capitalize' }}>{u.role}</span>
+                            {isSCD && <span className="pill" style={{ background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', fontSize: '0.65rem' }}>SCD</span>}
+                          </div>
                         </div>
-                        <span className="pill pill-neutral" style={{ textTransform: 'capitalize' }}>{u.role}</span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -713,16 +785,45 @@ export default function Home() {
             <aside>
               {selectedStudent ? (
                 <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
-                  <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+                  <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
                     🥗 Prescribe Diet Plan
                   </h3>
-                  <div style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
-                    Formulating diet for: <strong>{selectedStudent.name}</strong>
+
+                  {/* Patient Health Profile Summary */}
+                  <div style={{ marginBottom: '1rem', padding: '0.75rem', background: isSCDGenotype(selectedStudent.meta?.genotype || '') ? '#fef2f2' : '#f0fdf4', borderRadius: '8px', border: `1px solid ${isSCDGenotype(selectedStudent.meta?.genotype || '') ? '#fecaca' : '#bbf7d0'}` }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem' }}>{selectedStudent.name}</div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.78rem' }}>
+                      {selectedStudent.meta?.genotype ? (
+                        <span style={{
+                          padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 700,
+                          background: isSCDGenotype(selectedStudent.meta.genotype) ? '#fee2e2' : '#dcfce7',
+                          color: isSCDGenotype(selectedStudent.meta.genotype) ? '#991b1b' : '#166534',
+                          border: `1px solid ${isSCDGenotype(selectedStudent.meta.genotype) ? '#fca5a5' : '#86efac'}`
+                        }}>
+                          {isSCDGenotype(selectedStudent.meta.genotype) ? '🩸 ' : '✅ '}Genotype: {selectedStudent.meta.genotype}
+                        </span>
+                      ) : (
+                        <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#fef9c3', color: '#854d0e', border: '1px solid #fde047', fontWeight: 600 }}>⚠️ Genotype Unknown</span>
+                      )}
+                      {selectedStudent.meta?.bloodGroup && (
+                        <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#ede9fe', color: '#5b21b6', border: '1px solid #c4b5fd', fontWeight: 600 }}>
+                          🩺 {selectedStudent.meta.bloodGroup}
+                        </span>
+                      )}
+                      <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', textTransform: 'capitalize' }}>
+                        {selectedStudent.role}
+                      </span>
+                    </div>
+                    {isSCDGenotype(selectedStudent.meta?.genotype || '') && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.73rem', color: '#991b1b', fontWeight: 600 }}>
+                        ⚠️ Sickle Cell Patient — SCD-safe foods auto-filtered
+                      </div>
+                    )}
                   </div>
 
                   <form onSubmit={handlePublishDiet} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
 
-                    {/* SCD toggle at top so picker filters update accordingly */}
+                    {/* SCD toggle — auto-enabled for SS/SC, manual for others */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: forSickleCell ? '#ecfdf5' : '#f8fafc', borderRadius: '8px', border: `1px solid ${forSickleCell ? '#a7f3d0' : '#e2e8f0'}` }}>
                       <input
                         type="checkbox"
@@ -733,6 +834,9 @@ export default function Home() {
                       />
                       <label htmlFor="sc_opt" style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem', color: forSickleCell ? '#065f46' : '#475569' }}>
                         🩸 Optimize for Sickle Cell Guard
+                        {isSCDGenotype(selectedStudent.meta?.genotype || '') && (
+                          <span style={{ fontSize: '0.68rem', marginLeft: '0.3rem', color: '#dc2626' }}>(auto)</span>
+                        )}
                       </label>
                     </div>
 
@@ -983,6 +1087,54 @@ export default function Home() {
                           </div>
                         )}
 
+                        {/* Health Profile — Genotype & Blood Group */}
+                        <div style={{ paddingTop: '0.5rem', borderTop: '1px dashed var(--light-border)' }}>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🩺 Health Profile (Medical Record)</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Genotype</label>
+                              <select
+                                value={adminUserGenotype}
+                                onChange={(e) => setAdminUserGenotype(e.target.value)}
+                                className="form-input"
+                                style={{ height: '40px' }}
+                              >
+                                <option value="">— Select —</option>
+                                <option value="AA">AA (Normal)</option>
+                                <option value="AS">AS (Carrier)</option>
+                                <option value="SS">SS (Sickle Cell)</option>
+                                <option value="SC">SC (Sickle Cell)</option>
+                                <option value="AC">AC (Carrier)</option>
+                                <option value="CC">CC</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Blood Group</label>
+                              <select
+                                value={adminUserBloodGroup}
+                                onChange={(e) => setAdminUserBloodGroup(e.target.value)}
+                                className="form-input"
+                                style={{ height: '40px' }}
+                              >
+                                <option value="">— Select —</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                              </select>
+                            </div>
+                          </div>
+                          {adminUserGenotype && isSCDGenotype(adminUserGenotype) && (
+                            <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.65rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', fontSize: '0.73rem', color: '#991b1b', fontWeight: 600 }}>
+                              🩸 Sickle Cell genotype detected — this user will receive SCD-optimized diet plans by default.
+                            </div>
+                          )}
+                        </div>
+
                         <div>
                           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email Address</label>
                           <input
@@ -1024,6 +1176,8 @@ export default function Home() {
                                 setAdminUserEmail('');
                                 setAdminUserPassword('');
                                 setAdminUserLevel('100 Level');
+                                setAdminUserGenotype('');
+                                setAdminUserBloodGroup('');
                               }}
                             >
                               Cancel

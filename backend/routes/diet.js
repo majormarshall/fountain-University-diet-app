@@ -76,8 +76,8 @@ async function populateMeals(plans) {
   }
 }
 
-router.get('/:studentUsername', auth, async (req, res) => {
-  const { studentUsername } = req.params;
+router.get('/:studentUsername(*)', auth, async (req, res) => {
+  const studentUsername = decodeURIComponent(req.params.studentUsername);
   
   try {
     // 1. Find the student
@@ -134,12 +134,12 @@ router.get('/:studentUsername', auth, async (req, res) => {
   }
 });
 
-router.post('/:studentUsername', auth, async (req, res) => {
+router.post('/:studentUsername(*)', auth, async (req, res) => {
   if (req.user.role !== 'nutritionist' && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Forbidden' });
   }
   
-  const { studentUsername } = req.params;
+  const studentUsername = decodeURIComponent(req.params.studentUsername);
   
   try {
     const { data: students, error: studentError } = await supabase
@@ -170,8 +170,8 @@ router.post('/:studentUsername', auth, async (req, res) => {
       .single();
       
     if (error) {
-      console.error('Insert diet plan error', error);
-      return res.status(500).json({ message: 'Failed to create diet plan' });
+      console.error('Insert diet plan error — full details:', JSON.stringify(error, null, 2));
+      return res.status(500).json({ message: error.message || error.details || 'Failed to create diet plan', code: error.code });
     }
     
     // Format return object

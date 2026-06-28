@@ -23,8 +23,15 @@ function adminOnly(req, res, next) {
   next();
 }
 
+function nutritionistOrAdmin(req, res, next) {
+  if (req.user.role !== 'admin' && req.user.role !== 'nutritionist') {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  next();
+}
+
 // 1. Get all users
-router.get('/', auth, adminOnly, async (req, res) => {
+router.get('/', auth, nutritionistOrAdmin, async (req, res) => {
   try {
     const { data: users, error } = await supabase
       .from('users')
