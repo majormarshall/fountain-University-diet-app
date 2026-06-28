@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -289,12 +289,14 @@ export default function Home() {
           >
             🏠 Wellness Hub
           </button>
-          <button 
-            onClick={() => setTab('sickle')} 
-            className={`tab-btn ${tab === 'sickle' ? 'active' : ''}`}
-          >
-            🩸 Sickle Cell Diet
-          </button>
+          {isSCDGenotype(user.meta?.genotype || '') && (
+            <button 
+              onClick={() => setTab('sickle')} 
+              className={`tab-btn ${tab === 'sickle' ? 'active' : ''}`}
+            >
+              🩸 Sickle Cell Diet
+            </button>
+          )}
           {(user.role === 'nutritionist' || user.role === 'admin') && (
             <button 
               onClick={() => setTab('nutritionist-panel')} 
@@ -449,7 +451,7 @@ export default function Home() {
           </div>
         )}
 
-        {tab === 'sickle' && <SickleCellSection userRole={user.role} />}
+        {tab === 'sickle' && isSCDGenotype(user.meta?.genotype || '') && <SickleCellSection userRole={user.role} />}
 
         {tab === 'nutritionist-panel' && (user.role === 'nutritionist' || user.role === 'admin') && (
           <div className="dashboard-layout">
