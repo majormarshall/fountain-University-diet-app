@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import SickleCellSection from '../components/SickleCellSection';
+import NigerianFoodPicker from '../components/NigerianFoodPicker';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE !== undefined
   ? process.env.NEXT_PUBLIC_API_BASE
@@ -394,6 +395,7 @@ export default function Home() {
   // If not logged in, render the login page
   if (!token) {
     return (
+      <>
       <div className="app-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
         <div className="card" style={{ maxWidth: '480px', width: '100%', padding: '2.5rem', borderRadius: 'var(--radius-lg)' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -463,6 +465,27 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{
+        textAlign: 'center',
+        padding: '1.25rem',
+        marginTop: '2rem',
+        fontSize: '0.78rem',
+        color: 'var(--text-muted)',
+        borderTop: '1px solid var(--light-border)',
+        letterSpacing: '0.04em'
+      }}>
+        <span style={{ opacity: 0.7 }}>Powered by</span>{' '}
+        <strong style={{
+          background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontWeight: 800,
+          letterSpacing: '0.02em'
+        }}>Dev Spirit</strong>
+      </footer>
+      </>
     );
   }
 
@@ -697,62 +720,49 @@ export default function Home() {
                     Formulating diet for: <strong>{selectedStudent.name}</strong>
                   </div>
 
-                  <form onSubmit={handlePublishDiet} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>🥣 Breakfast Option</label>
-                      <select 
-                        value={breakfastItem} 
-                        onChange={(e) => setBreakfastItem(e.target.value)} 
-                        className="form-input"
-                        style={{ height: '40px' }}
-                      >
-                        <option value="">-- Select Food --</option>
-                        {foods?.map((f: any) => <option key={f.id} value={f.name}>{f.name}</option>)}
-                        <option value="Hibiscus tea & whole toast">Moringa Tea & Toast</option>
-                      </select>
+                  <form onSubmit={handlePublishDiet} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+
+                    {/* SCD toggle at top so picker filters update accordingly */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: forSickleCell ? '#ecfdf5' : '#f8fafc', borderRadius: '8px', border: `1px solid ${forSickleCell ? '#a7f3d0' : '#e2e8f0'}` }}>
+                      <input
+                        type="checkbox"
+                        id="sc_opt"
+                        checked={forSickleCell}
+                        onChange={(e) => setForSickleCell(e.target.checked)}
+                        style={{ cursor: 'pointer', accentColor: '#059669' }}
+                      />
+                      <label htmlFor="sc_opt" style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem', color: forSickleCell ? '#065f46' : '#475569' }}>
+                        🩸 Optimize for Sickle Cell Guard
+                      </label>
                     </div>
 
-                    <div>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>🍛 Lunch Option</label>
-                      <select 
-                        value={lunchItem} 
-                        onChange={(e) => setLunchItem(e.target.value)} 
-                        className="form-input"
-                        style={{ height: '40px' }}
-                      >
-                        <option value="">-- Select Food --</option>
-                        {foods?.map((f: any) => <option key={f.id} value={f.name}>{f.name}</option>)}
-                        <option value="Jollof Rice & Steamed Fish">Jollof Rice & Steamed Fish</option>
-                      </select>
-                    </div>
+                    <NigerianFoodPicker
+                      label="🥣 Breakfast"
+                      value={breakfastItem}
+                      onChange={setBreakfastItem}
+                      scdMode={forSickleCell}
+                    />
 
-                    <div>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>🍲 Dinner Option</label>
-                      <select 
-                        value={dinnerItem} 
-                        onChange={(e) => setDinnerItem(e.target.value)} 
-                        className="form-input"
-                        style={{ height: '40px' }}
-                      >
-                        <option value="">-- Select Food --</option>
-                        {foods?.map((f: any) => <option key={f.id} value={f.name}>{f.name}</option>)}
-                        <option value="Egusi Soup & Pounded Yam">Egusi Soup & Pounded Yam</option>
-                      </select>
-                    </div>
+                    <NigerianFoodPicker
+                      label="🍛 Lunch"
+                      value={lunchItem}
+                      onChange={setLunchItem}
+                      scdMode={forSickleCell}
+                    />
 
-                    <div>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>🍎 Healthy Snacks Option</label>
-                      <select 
-                        value={snacksItem} 
-                        onChange={(e) => setSnacksItem(e.target.value)} 
-                        className="form-input"
-                        style={{ height: '40px' }}
-                      >
-                        <option value="">-- Select Food --</option>
-                        {foods?.map((f: any) => <option key={f.id} value={f.name}>{f.name}</option>)}
-                        <option value="Fresh Orange & Walnut">Fresh Orange & Walnut</option>
-                      </select>
-                    </div>
+                    <NigerianFoodPicker
+                      label="🍲 Dinner"
+                      value={dinnerItem}
+                      onChange={setDinnerItem}
+                      scdMode={forSickleCell}
+                    />
+
+                    <NigerianFoodPicker
+                      label="🍎 Healthy Snack"
+                      value={snacksItem}
+                      onChange={setSnacksItem}
+                      scdMode={forSickleCell}
+                    />
 
                     <div>
                       <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
@@ -768,18 +778,7 @@ export default function Home() {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                      <input 
-                        type="checkbox" 
-                        id="sc_opt" 
-                        checked={forSickleCell} 
-                        onChange={(e) => setForSickleCell(e.target.checked)} 
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <label htmlFor="sc_opt" style={{ cursor: 'pointer', fontWeight: 600 }}>
-                        Optimize for Sickle Cell Guard
-                      </label>
-                    </div>
+
 
                     <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
                       Publish Personalized Plan
@@ -1245,6 +1244,26 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer style={{
+        textAlign: 'center',
+        padding: '1.25rem 1rem',
+        marginTop: '1rem',
+        fontSize: '0.78rem',
+        color: 'var(--text-muted)',
+        borderTop: '1px solid var(--light-border)',
+        letterSpacing: '0.04em'
+      }}>
+        <span style={{ opacity: 0.7 }}>Powered by</span>{' '}
+        <strong style={{
+          background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontWeight: 800,
+          letterSpacing: '0.02em'
+        }}>Dev Spirit</strong>
+      </footer>
     </div>
   );
 }

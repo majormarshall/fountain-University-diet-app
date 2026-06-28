@@ -33,14 +33,19 @@ async function populateMeals(plans) {
     }
   });
 
-  if (foodIds.size === 0) return plans;
+  // Filter only valid UUIDs to prevent PostgreSQL errors when querying with custom string names
+  const validUUIDs = Array.from(foodIds).filter(id => 
+    typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  );
+
+  if (validUUIDs.length === 0) return plans;
 
   // 2. Fetch the food items from Supabase
   try {
     const { data: foods, error } = await supabase
       .from('food_items')
       .select('*')
-      .in('id', Array.from(foodIds));
+      .in('id', validUUIDs);
       
     if (error || !foods) {
       console.error('Failed to populate food items', error);
