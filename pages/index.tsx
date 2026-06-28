@@ -372,9 +372,79 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '3rem 2rem', color: 'var(--text-muted)' }}>
-                    🥣 <strong>No personalized diets assigned yet.</strong><br/>
-                    Our university nutritionist has not published a customized diet plan for your account yet. You can explore standard wellness information or cataloged foods in the tabs above!
+                  <div>
+                    {/* General Wellness Plan for normal (non-SCD) users */}
+                    {!isSCDGenotype(user.meta?.genotype || '') && (
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: '0.6rem',
+                          marginBottom: '1rem', padding: '0.65rem 1rem',
+                          background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)',
+                          border: '1px solid #bbf7d0', borderRadius: '10px'
+                        }}>
+                          <span style={{ fontSize: '1.3rem' }}>🥗</span>
+                          <div>
+                            <div style={{ fontWeight: 800, color: '#065f46', fontSize: '0.95rem' }}>
+                              General Wellness Diet Plan
+                            </div>
+                            <div style={{ fontSize: '0.73rem', color: '#047857' }}>
+                              Standard balanced Nigerian diet recommended by Fountain University Nutrition Team
+                            </div>
+                          </div>
+                          <span className="pill" style={{ marginLeft: 'auto', background: '#dcfce7', color: '#166534', border: '1px solid #86efac', fontSize: '0.68rem', fontWeight: 700 }}>GENERAL</span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.85rem' }}>
+                          {[
+                            {
+                              meal: '🥣 Breakfast', time: '7:00 – 9:00 AM',
+                              foods: ['Oat Pottage or Akamu (Pap)', 'Boiled Eggs (2)', 'Fresh Fruit (Banana/Orange)'],
+                              bg: '#eff6ff', border: '#bfdbfe', head: '#1d4ed8'
+                            },
+                            {
+                              meal: '🍛 Lunch', time: '12:00 – 2:00 PM',
+                              foods: ['Jollof Rice & Grilled Chicken', 'Moi Moi + Vegetable Salad', 'Chilled Water / Zobo'],
+                              bg: '#fefce8', border: '#fde68a', head: '#92400e'
+                            },
+                            {
+                              meal: '🍲 Dinner', time: '6:00 – 8:00 PM',
+                              foods: ['Yam or Plantain Pottage', 'Egusi / Okra Soup + Eba', 'Tilapia or Catfish (Grilled)'],
+                              bg: '#fdf4ff', border: '#e9d5ff', head: '#6d28d9'
+                            },
+                            {
+                              meal: '🍎 Snacks', time: 'Between meals',
+                              foods: ['Groundnut (Roasted)', 'Garden Eggs / Cucumber', 'Tiger Nut Drink or Water'],
+                              bg: '#fff7ed', border: '#fed7aa', head: '#c2410c'
+                            }
+                          ].map(({ meal, time, foods, bg, border, head }) => (
+                            <div key={meal} style={{ background: bg, border: `1px solid ${border}`, borderRadius: '10px', padding: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                              <div style={{ fontWeight: 800, fontSize: '0.85rem', color: head }}>{meal}</div>
+                              <div style={{ fontSize: '0.68rem', color: '#64748b', marginBottom: '0.3rem' }}>⏰ {time}</div>
+                              {foods.map((f, i) => (
+                                <div key={i} style={{ fontSize: '0.82rem', color: '#374151', display: 'flex', alignItems: 'flex-start', gap: '0.3rem' }}>
+                                  <span>•</span><span>{f}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+
+                        <div style={{ marginTop: '1rem', padding: '0.65rem 1rem', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '8px', fontSize: '0.8rem', color: '#0369a1' }}>
+                          💧 <strong>Hydration Goal:</strong> Drink at least <strong>8 glasses (2 litres)</strong> of water daily. Avoid sugary carbonated drinks with meals.
+                        </div>
+                        <div style={{ marginTop: '0.6rem', padding: '0.55rem 1rem', background: '#f8fafc', border: '1px dashed var(--light-border)', borderRadius: '8px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                          ℹ️ This is a <strong>general wellness plan</strong>. Your university nutritionist can assign a personalized plan tailored specifically to your health profile.
+                        </div>
+                      </div>
+                    )}
+
+                    {/* For SCD users with no plan yet */}
+                    {isSCDGenotype(user.meta?.genotype || '') && (
+                      <div style={{ textAlign: 'center', padding: '2.5rem 2rem', color: 'var(--text-muted)' }}>
+                        🩸 <strong>No personalized SCD diet assigned yet.</strong><br/>
+                        Your nutritionist will publish a sickle-cell optimized plan soon. Visit the <strong>Sickle Cell Diet</strong> tab for dietary guidance in the meantime.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
