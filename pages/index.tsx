@@ -426,7 +426,7 @@ export default function Home() {
 
           {loginError && (
             <div style={{ background: 'var(--danger-light)', color: 'var(--danger)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', fontSize: '0.85rem', fontWeight: 600, border: '1px solid #fee2e2' }}>
-              ⚠️ {loginError}
+              âš ï¸ {loginError}
             </div>
           )}
 
@@ -451,7 +451,7 @@ export default function Home() {
               </label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 className="form-input"
@@ -469,13 +469,13 @@ export default function Home() {
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>QUICK DEMO ACCELERATORS:</span>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
               <button onClick={() => fillDemo('student')} className="btn btn-secondary" style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}>
-                👤 Student
+                ðŸ‘¤ Student
               </button>
               <button onClick={() => fillDemo('nutritionist')} className="btn btn-secondary" style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}>
-                🥑 Nutritionist
+                ðŸ¥‘ Nutritionist
               </button>
               <button onClick={() => fillDemo('admin')} className="btn btn-secondary" style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}>
-                ⚙️ Admin
+                âš™ï¸ Admin
               </button>
             </div>
           </div>
@@ -528,32 +528,33 @@ export default function Home() {
             onClick={() => setTab('home')} 
             className={`tab-btn ${tab === 'home' ? 'active' : ''}`}
           >
-            🏠 Wellness Hub
+            ðŸ  Wellness Hub
           </button>
           <button 
             onClick={() => setTab('sickle')} 
             className={`tab-btn ${tab === 'sickle' ? 'active' : ''}`}
           >
-            🩸 Sickle Cell Diet
+            ðŸ©¸ Sickle Cell Diet
           </button>
           {(user.role === 'nutritionist' || user.role === 'admin') && (
             <button 
               onClick={() => setTab('nutritionist-panel')} 
               className={`tab-btn ${tab === 'nutritionist-panel' ? 'active' : ''}`}
             >
-              🥑 Nutritionist Control Panel
+              ðŸ¥‘ Nutritionist Control Panel
             </button>
           )}
           {user.role === 'admin' && (
-            <button 
-              onClick={() => setTab('admin-panel')} 
-              className={`tab-btn ${tab === 'admin-panel' ? 'active' : ''}`}
+            <a
+              href="/admin"
+              className="tab-btn"
+              style={{ textDecoration: 'none', color: 'var(--primary)', fontWeight: 700 }}
             >
-              ⚙️ Admin Portal
-            </button>
+              âš™ï¸ Admin Console â†—
+            </a>
           )}
           <button onClick={handleLogout} className="tab-btn" style={{ color: 'var(--danger)' }}>
-            🚪 Logout
+            ðŸšª Logout
           </button>
         </nav>
       </header>
@@ -572,10 +573,10 @@ export default function Home() {
                       <div key={plan.id} style={{ border: '1px solid var(--primary-glow)', background: 'var(--primary-light)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                           <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>
-                            📅 Prescribed: {new Date(plan.date).toLocaleDateString()}
+                            ðŸ“… Prescribed: {new Date(plan.date).toLocaleDateString()}
                           </span>
                           {plan.forSickleCell && (
-                            <span className="pill pill-success" style={{ border: '1px solid #a7f3d0' }}>🩸 Optimized for Sickle Cell Guard</span>
+                            <span className="pill pill-success" style={{ border: '1px solid #a7f3d0' }}>ðŸ©¸ Optimized for Sickle Cell Guard</span>
                           )}
                         </div>
 
@@ -588,7 +589,7 @@ export default function Home() {
                               </h4>
                               {meal.items?.map((item: any, i: number) => (
                                 <div key={i} style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                  🍽️ {item.food}
+                                  ðŸ½ï¸ {item.food}
                                 </div>
                               ))}
                             </div>
@@ -599,7 +600,7 @@ export default function Home() {
                         {plan.notes && (
                           <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px dashed var(--light-border)' }}>
                             <h5 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--dark-bg)', marginBottom: '0.25rem' }}>
-                              🩺 Clinical Prescription / Nutritionist Instructions:
+                              ðŸ©º Clinical Prescription / Nutritionist Instructions:
                             </h5>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontStyle: 'italic', paddingLeft: '0.5rem', borderLeft: '3px solid var(--primary)' }}>
                               "{plan.notes}"
@@ -611,7 +612,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '3rem 2rem', color: 'var(--text-muted)' }}>
-                    🥣 <strong>No personalized diets assigned yet.</strong><br/>
+                    ðŸ¥£ <strong>No personalized diets assigned yet.</strong><br/>
                     Our university nutritionist has not published a customized diet plan for your account yet. You can explore standard wellness information or cataloged foods in the tabs above!
                   </div>
                 )}
@@ -627,7 +628,7 @@ export default function Home() {
 
             <aside>
               <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
-                <h3>🏫 Student / Staff Details</h3>
+                <h3>ðŸ« Student / Staff Details</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
                   <div className="nutrient-row">
                     <span>Full Name</span>
@@ -655,7 +656,7 @@ export default function Home() {
                         fontWeight: 800
                       }}>
                         {user.meta.genotype}
-                        {isSCDGenotype(user.meta.genotype) ? ' 🩸' : ' ✅'}
+                        {isSCDGenotype(user.meta.genotype) ? ' ðŸ©¸' : ' âœ…'}
                       </strong>
                     </div>
                   )}
@@ -671,7 +672,7 @@ export default function Home() {
                       background: '#fef2f2', border: '1px solid #fecaca',
                       borderRadius: '8px', fontSize: '0.78rem', color: '#991b1b', fontWeight: 600
                     }}>
-                      🩸 Sickle Cell Patient — your diet plans are specially optimized for SCD management.
+                      ðŸ©¸ Sickle Cell Patient â€” your diet plans are specially optimized for SCD management.
                     </div>
                   )}
                   {(!user.meta?.genotype) && (
@@ -680,7 +681,7 @@ export default function Home() {
                       background: '#fffbeb', border: '1px solid #fde68a',
                       borderRadius: '8px', fontSize: '0.78rem', color: '#92400e'
                     }}>
-                      ⚠️ Genotype not recorded. Contact admin to update your health profile.
+                      âš ï¸ Genotype not recorded. Contact admin to update your health profile.
                     </div>
                   )}
                 </div>
@@ -725,11 +726,11 @@ export default function Home() {
                               <span>ID: {u.username}</span>
                               {u.meta?.genotype && (
                                 <span style={{ fontWeight: 700, color: isSCD ? '#dc2626' : '#059669' }}>
-                                  {isSCD ? '🩸' : '✅'} {u.meta.genotype}
+                                  {isSCD ? 'ðŸ©¸' : 'âœ…'} {u.meta.genotype}
                                 </span>
                               )}
                               {u.meta?.bloodGroup && (
-                                <span style={{ color: '#6366f1' }}>🩺 {u.meta.bloodGroup}</span>
+                                <span style={{ color: '#6366f1' }}>ðŸ©º {u.meta.bloodGroup}</span>
                               )}
                             </div>
                           </div>
@@ -753,15 +754,15 @@ export default function Home() {
                       {selectedStudentPlans.map((plan: any) => (
                         <div key={plan.id} style={{ border: '1px solid var(--light-border)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                            <span>📅 Published: {new Date(plan.date).toLocaleString()}</span>
-                            {plan.forSickleCell && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>🩸 Sickle Cell Guard</span>}
+                            <span>ðŸ“… Published: {new Date(plan.date).toLocaleString()}</span>
+                            {plan.forSickleCell && <span style={{ color: 'var(--primary)', fontWeight: 700 }}>ðŸ©¸ Sickle Cell Guard</span>}
                           </div>
                           
                           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                             {plan.meals?.map((m: any, idx: number) => (
                               <div key={idx} style={{ background: '#f8fafc', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>{m.name}</span>
-                                <strong style={{ fontSize: '0.85rem' }}>{m.items?.[0]?.food || '—'}</strong>
+                                <strong style={{ fontSize: '0.85rem' }}>{m.items?.[0]?.food || 'â€”'}</strong>
                               </div>
                             ))}
                           </div>
@@ -786,7 +787,7 @@ export default function Home() {
               {selectedStudent ? (
                 <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
                   <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-                    🥗 Prescribe Diet Plan
+                    ðŸ¥— Prescribe Diet Plan
                   </h3>
 
                   {/* Patient Health Profile Summary */}
@@ -800,14 +801,14 @@ export default function Home() {
                           color: isSCDGenotype(selectedStudent.meta.genotype) ? '#991b1b' : '#166534',
                           border: `1px solid ${isSCDGenotype(selectedStudent.meta.genotype) ? '#fca5a5' : '#86efac'}`
                         }}>
-                          {isSCDGenotype(selectedStudent.meta.genotype) ? '🩸 ' : '✅ '}Genotype: {selectedStudent.meta.genotype}
+                          {isSCDGenotype(selectedStudent.meta.genotype) ? 'ðŸ©¸ ' : 'âœ… '}Genotype: {selectedStudent.meta.genotype}
                         </span>
                       ) : (
-                        <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#fef9c3', color: '#854d0e', border: '1px solid #fde047', fontWeight: 600 }}>⚠️ Genotype Unknown</span>
+                        <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#fef9c3', color: '#854d0e', border: '1px solid #fde047', fontWeight: 600 }}>âš ï¸ Genotype Unknown</span>
                       )}
                       {selectedStudent.meta?.bloodGroup && (
                         <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#ede9fe', color: '#5b21b6', border: '1px solid #c4b5fd', fontWeight: 600 }}>
-                          🩺 {selectedStudent.meta.bloodGroup}
+                          ðŸ©º {selectedStudent.meta.bloodGroup}
                         </span>
                       )}
                       <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', textTransform: 'capitalize' }}>
@@ -816,14 +817,14 @@ export default function Home() {
                     </div>
                     {isSCDGenotype(selectedStudent.meta?.genotype || '') && (
                       <div style={{ marginTop: '0.5rem', fontSize: '0.73rem', color: '#991b1b', fontWeight: 600 }}>
-                        ⚠️ Sickle Cell Patient — SCD-safe foods auto-filtered
+                        âš ï¸ Sickle Cell Patient â€” SCD-safe foods auto-filtered
                       </div>
                     )}
                   </div>
 
                   <form onSubmit={handlePublishDiet} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
 
-                    {/* SCD toggle — auto-enabled for SS/SC, manual for others */}
+                    {/* SCD toggle â€” auto-enabled for SS/SC, manual for others */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: forSickleCell ? '#ecfdf5' : '#f8fafc', borderRadius: '8px', border: `1px solid ${forSickleCell ? '#a7f3d0' : '#e2e8f0'}` }}>
                       <input
                         type="checkbox"
@@ -833,7 +834,7 @@ export default function Home() {
                         style={{ cursor: 'pointer', accentColor: '#059669' }}
                       />
                       <label htmlFor="sc_opt" style={{ cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem', color: forSickleCell ? '#065f46' : '#475569' }}>
-                        🩸 Optimize for Sickle Cell Guard
+                        ðŸ©¸ Optimize for Sickle Cell Guard
                         {isSCDGenotype(selectedStudent.meta?.genotype || '') && (
                           <span style={{ fontSize: '0.68rem', marginLeft: '0.3rem', color: '#dc2626' }}>(auto)</span>
                         )}
@@ -841,28 +842,28 @@ export default function Home() {
                     </div>
 
                     <NigerianFoodPicker
-                      label="🥣 Breakfast"
+                      label="ðŸ¥£ Breakfast"
                       value={breakfastItem}
                       onChange={setBreakfastItem}
                       scdMode={forSickleCell}
                     />
 
                     <NigerianFoodPicker
-                      label="🍛 Lunch"
+                      label="ðŸ› Lunch"
                       value={lunchItem}
                       onChange={setLunchItem}
                       scdMode={forSickleCell}
                     />
 
                     <NigerianFoodPicker
-                      label="🍲 Dinner"
+                      label="ðŸ² Dinner"
                       value={dinnerItem}
                       onChange={setDinnerItem}
                       scdMode={forSickleCell}
                     />
 
                     <NigerianFoodPicker
-                      label="🍎 Healthy Snack"
+                      label="ðŸŽ Healthy Snack"
                       value={snacksItem}
                       onChange={setSnacksItem}
                       scdMode={forSickleCell}
@@ -870,7 +871,7 @@ export default function Home() {
 
                     <div>
                       <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                        🩺 Clinical Notes / Therapeutic Prescriptions
+                        ðŸ©º Clinical Notes / Therapeutic Prescriptions
                       </label>
                       <textarea
                         rows={3}
@@ -891,512 +892,13 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  🥑 Click on any student or staff member in the registry on the left to begin formulating custom dietary plans!
+                  ðŸ¥‘ Click on any student or staff member in the registry on the left to begin formulating custom dietary plans!
                 </div>
               )}
             </aside>
           </div>
         )}
 
-        {/* --- GLOBAL ADMIN PORTAL --- */}
-        {tab === 'admin-panel' && user.role === 'admin' && (
-          <div>
-            {/* Admin Header SubTabs */}
-            <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <h2 style={{ marginBottom: 0 }}>⚙️ Portal Administration Console</h2>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Ultimate full-stack catalog control database synced with Supabase.</span>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  onClick={() => setAdminSubTab('users')} 
-                  className={`btn ${adminSubTab === 'users' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                >
-                  👥 Student & Staff Onboarding Space
-                </button>
-                <button 
-                  onClick={() => setAdminSubTab('foods')} 
-                  className={`btn ${adminSubTab === 'foods' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-                >
-                  🍎 Manage Foods Database
-                </button>
-              </div>
-            </div>
-
-            {/* --- ADMIN USER MANAGEMENT SUBTAB --- */}
-            {adminSubTab === 'users' && (
-              <div className="dashboard-layout">
-                {/* Left panel: List all users */}
-                <div>
-                  <div className="card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <h3 style={{ margin: 0 }}>👥 Onboarded Registry ({filteredUsers.length})</h3>
-                      <input
-                        placeholder="Search by name or matric number..."
-                        value={adminUserQuery}
-                        onChange={(e) => setAdminUserQuery(e.target.value)}
-                        className="form-input"
-                        style={{ maxWidth: '280px', padding: '0.5rem 1rem' }}
-                      />
-                    </div>
-
-                    {/* Role Filter Tabs */}
-                    <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1.25rem', flexWrap: 'wrap', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.75rem' }}>
-                      {(['all', 'student', 'staff', 'clinicians'] as const).map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setAdminUserRoleFilter(r)}
-                          className={`tab-btn ${adminUserRoleFilter === r ? 'active' : ''}`}
-                          style={{
-                            padding: '0.35rem 0.75rem',
-                            fontSize: '0.75rem',
-                            textTransform: 'capitalize',
-                            borderRadius: 'var(--radius-sm)'
-                          }}
-                        >
-                          {r === 'all' ? 'All Roles' : r === 'clinicians' ? 'Admins & Clinicians' : r === 'staff' ? 'Staff Members' : 'Students'}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {filteredUsers.map((u: any) => (
-                        <div key={u.id} className="food-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem' }}>
-                          <div>
-                            <strong style={{ fontSize: '1.05rem', color: 'var(--dark-bg)' }}>{u.name}</strong>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
-                              <span>🔑 ID: <strong>{u.username}</strong></span>
-                              <span>✉️ {u.email || 'No email'}</span>
-                            </div>
-                          </div>
-                          
-                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <span className="pill pill-neutral" style={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>{u.role}</span>
-                            <button 
-                              onClick={() => handleEditUserClick(u)} 
-                              className="btn btn-secondary"
-                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
-                            >
-                              ✏️ Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteUser(u.id, u.name)} 
-                              className="btn btn-secondary"
-                              style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: '#fecaca' }}
-                            >
-                              🗑️ Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right panel: Create / Edit user form */}
-                <aside>
-                  <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
-                    <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
-                      {userIdToEdit ? '✏️ Edit User Details' : '👤 Onboarding Portal'}
-                    </h3>
-
-                    {!userIdToEdit && (
-                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '1px dashed var(--light-border)', paddingBottom: '0.75rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => setOnboardMethod('single')}
-                          className={`btn ${onboardMethod === 'single' ? 'btn-primary' : 'btn-secondary'}`}
-                          style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '36px' }}
-                        >
-                          👤 Single Account
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setOnboardMethod('bulk')}
-                          className={`btn ${onboardMethod === 'bulk' ? 'btn-primary' : 'btn-secondary'}`}
-                          style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.75rem', height: '36px' }}
-                        >
-                          📂 Bulk Onboard
-                        </button>
-                      </div>
-                    )}
-
-                    {onboardMethod === 'single' || userIdToEdit ? (
-                      <form onSubmit={handleAdminSaveUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Matric ID / Staff ID</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. FUO/20/0205"
-                            value={adminUserUsername}
-                            onChange={(e) => setAdminUserUsername(e.target.value)}
-                            className="form-input"
-                            required
-                            disabled={!!userIdToEdit}
-                          />
-                        </div>
-
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Full Name</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. John Doe"
-                            value={adminUserName}
-                            onChange={(e) => setAdminUserName(e.target.value)}
-                            className="form-input"
-                            required
-                          />
-                        </div>
-
-                         <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>University Role</label>
-                          <select
-                            value={adminUserRole}
-                            onChange={(e) => setAdminUserRole(e.target.value)}
-                            className="form-input"
-                            style={{ height: '40px' }}
-                          >
-                            <option value="student">Student</option>
-                            <option value="staff">Staff Member</option>
-                            <option value="nutritionist">Nutritionist</option>
-                            <option value="doctor">Medical Doctor</option>
-                            <option value="admin">Administrator</option>
-                          </select>
-                        </div>
-
-                        {adminUserRole === 'student' && (
-                          <div>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Academic Level</label>
-                            <select
-                              value={adminUserLevel}
-                              onChange={(e) => setAdminUserLevel(e.target.value)}
-                              className="form-input"
-                              style={{ height: '40px' }}
-                            >
-                              <option value="100 Level">100 Level</option>
-                              <option value="200 Level">200 Level</option>
-                              <option value="300 Level">300 Level</option>
-                              <option value="400 Level">400 Level</option>
-                              <option value="500 Level">500 Level</option>
-                              <option value="Postgraduate">Postgraduate</option>
-                            </select>
-                          </div>
-                        )}
-
-                        {/* Health Profile — Genotype & Blood Group */}
-                        <div style={{ paddingTop: '0.5rem', borderTop: '1px dashed var(--light-border)' }}>
-                          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🩺 Health Profile (Medical Record)</div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                            <div>
-                              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Genotype</label>
-                              <select
-                                value={adminUserGenotype}
-                                onChange={(e) => setAdminUserGenotype(e.target.value)}
-                                className="form-input"
-                                style={{ height: '40px' }}
-                              >
-                                <option value="">— Select —</option>
-                                <option value="AA">AA (Normal)</option>
-                                <option value="AS">AS (Carrier)</option>
-                                <option value="SS">SS (Sickle Cell)</option>
-                                <option value="SC">SC (Sickle Cell)</option>
-                                <option value="AC">AC (Carrier)</option>
-                                <option value="CC">CC</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Blood Group</label>
-                              <select
-                                value={adminUserBloodGroup}
-                                onChange={(e) => setAdminUserBloodGroup(e.target.value)}
-                                className="form-input"
-                                style={{ height: '40px' }}
-                              >
-                                <option value="">— Select —</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                              </select>
-                            </div>
-                          </div>
-                          {adminUserGenotype && isSCDGenotype(adminUserGenotype) && (
-                            <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.65rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', fontSize: '0.73rem', color: '#991b1b', fontWeight: 600 }}>
-                              🩸 Sickle Cell genotype detected — this user will receive SCD-optimized diet plans by default.
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Email Address</label>
-                          <input
-                            type="email"
-                            placeholder="student@fuo.edu.ng"
-                            value={adminUserEmail}
-                            onChange={(e) => setAdminUserEmail(e.target.value)}
-                            className="form-input"
-                          />
-                        </div>
-
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                            {userIdToEdit ? '🔑 Reset Password (leave blank to keep current)' : '🔑 Portal Password'}
-                          </label>
-                          <input
-                            type="password"
-                            placeholder="••••••••"
-                            value={adminUserPassword}
-                            onChange={(e) => setAdminUserPassword(e.target.value)}
-                            className="form-input"
-                            required={!userIdToEdit}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                          <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                            {userIdToEdit ? 'Save Changes' : 'Register Account'}
-                          </button>
-                          {userIdToEdit && (
-                            <button 
-                              type="button" 
-                              className="btn btn-secondary" 
-                              onClick={() => {
-                                setUserIdToEdit(null);
-                                setAdminUserUsername('');
-                                setAdminUserName('');
-                                setAdminUserRole('student');
-                                setAdminUserEmail('');
-                                setAdminUserPassword('');
-                                setAdminUserLevel('100 Level');
-                                setAdminUserGenotype('');
-                                setAdminUserBloodGroup('');
-                              }}
-                            >
-                              Cancel
-                            </button>
-                          )}
-                        </div>
-                      </form>
-                    ) : (
-                      <form onSubmit={handleAdminBulkOnboard} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                            Bulk Onboarding Data (CSV)
-                          </label>
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem', lineHeight: '1.3' }}>
-                            Paste user records, one per line using format:<br/>
-                            <code>ID, Full Name, Role, [Email], [Password]</code><br/>
-                            <em>Example:</em><br/>
-                            <code>FUO/20/0999, Alice Johnson, student, alice@fuo.edu.ng, secret123</code>
-                          </span>
-                          <textarea
-                            rows={10}
-                            placeholder="FUO/20/0999, Alice Johnson, student, alice@fuo.edu.ng, secret123&#10;FUO/staff/111, Dr Mary, staff, mary@fuo.edu.ng, mary789"
-                            value={bulkInputText}
-                            onChange={(e) => setBulkInputText(e.target.value)}
-                            className="form-input"
-                            style={{ fontFamily: 'monospace', fontSize: '0.75rem', resize: 'vertical' }}
-                            required
-                          />
-                        </div>
-
-                        <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }} disabled={bulkIsSubmitting}>
-                          {bulkIsSubmitting ? 'Onboarding...' : '🚀 Execute Bulk Onboarding'}
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                </aside>
-              </div>
-            )}
-
-            {/* --- ADMIN FOODS DATABASE MANAGEMENT SUBTAB --- */}
-            {adminSubTab === 'foods' && (
-              <div className="dashboard-layout">
-                {/* Left panel: List all foods */}
-                <div>
-                  <div className="card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <h3 style={{ margin: 0 }}>🍎 Foods Database Catalog ({filteredFoods.length})</h3>
-                      <input
-                        placeholder="Search standard foods..."
-                        value={adminFoodQuery}
-                        onChange={(e) => setAdminFoodQuery(e.target.value)}
-                        className="form-input"
-                        style={{ maxWidth: '280px', padding: '0.5rem 1rem' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {filteredFoods.map((f: any) => (
-                        <div key={f.id} className="food-card" style={{ padding: '1.25rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <strong style={{ fontSize: '1.1rem', color: 'var(--dark-bg)' }}>{f.name}</strong>
-                              <span className="pill pill-neutral" style={{ marginLeft: '0.5rem', fontSize: '0.65rem' }}>{f.category}</span>
-                            </div>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button 
-                                onClick={() => handleEditFoodClick(f)} 
-                                className="btn btn-secondary"
-                                style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteFood(f.id, f.name)} 
-                                className="btn btn-secondary"
-                                style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: '#fecaca' }}
-                              >
-                                🗑️ Delete
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                            <span>⚡ Calories: {f.calories} kcal</span>
-                            <span>🥩 Protein: {f.protein_g}g</span>
-                            <span>🌾 Carbs: {f.carbs_g}g</span>
-                            <span>🧈 Fat: {f.fat_g}g</span>
-                          </div>
-                          {f.notes && (
-                            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                              Notes: {f.notes}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right panel: Add / Edit food form */}
-                <aside>
-                  <div className="detail-sidebar" style={{ position: 'relative', top: 0 }}>
-                    <h3 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--light-border)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
-                      {foodIdToEdit ? '✏️ Edit Food Profile' : '🍎 Catalog New Food'}
-                    </h3>
-
-                    <form onSubmit={handleAdminSaveFood} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Food Item Name</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Rice & Beans"
-                          value={adminFoodName}
-                          onChange={(e) => setAdminFoodName(e.target.value)}
-                          className="form-input"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Category</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Carb, Protein, Mixed"
-                          value={adminFoodCategory}
-                          onChange={(e) => setAdminFoodCategory(e.target.value)}
-                          className="form-input"
-                          required
-                        />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                        <div>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Calories (kcal)</label>
-                          <input
-                            type="number"
-                            value={adminFoodCalories}
-                            onChange={(e) => setAdminFoodCalories(e.target.value)}
-                            className="form-input"
-                          />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Protein (g)</label>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={adminFoodProtein}
-                            onChange={(e) => setAdminFoodProtein(e.target.value)}
-                            className="form-input"
-                          />
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                        <div>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Carbohydrates (g)</label>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={adminFoodCarbs}
-                            onChange={(e) => setAdminFoodCarbs(e.target.value)}
-                            className="form-input"
-                          />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Fat (g)</label>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={adminFoodFat}
-                            onChange={(e) => setAdminFoodFat(e.target.value)}
-                            className="form-input"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Dietary & Botanical Notes</label>
-                        <input
-                          type="text"
-                          placeholder="Staple cereal porridge..."
-                          value={adminFoodNotes}
-                          onChange={(e) => setAdminFoodNotes(e.target.value)}
-                          className="form-input"
-                        />
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                          {foodIdToEdit ? 'Save Updates' : 'Add to Catalog'}
-                        </button>
-                        {foodIdToEdit && (
-                          <button 
-                            type="button" 
-                            className="btn btn-secondary" 
-                            onClick={() => {
-                              setFoodIdToEdit(null);
-                              setAdminFoodName('');
-                              setAdminFoodCategory('');
-                              setAdminFoodCalories('');
-                              setAdminFoodProtein('');
-                              setAdminFoodCarbs('');
-                              setAdminFoodFat('');
-                              setAdminFoodNotes('');
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    </form>
-                  </div>
-                </aside>
-              </div>
-            )}
-
-          </div>
-        )}
       </main>
 
       {/* Footer */}
