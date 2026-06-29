@@ -1,6 +1,19 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- sos_alerts table: tracks student/staff distress signals
+CREATE TABLE IF NOT EXISTS sos_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  username TEXT NOT NULL,
+  name TEXT,
+  alert_type TEXT NOT NULL CHECK (alert_type IN ('medical', 'nutrition', 'crisis', 'other')),
+  message TEXT DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'acknowledged')),
+  acknowledged_by TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

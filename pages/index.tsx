@@ -33,7 +33,12 @@ export default function Home() {
   const [dinnerItem, setDinnerItem] = useState('');
   const [snacksItem, setSnacksItem] = useState('');
 
-
+  // SOS Distress Alert States
+  const [sosModalOpen, setSosModalOpen] = useState(false);
+  const [sosAlertType, setSosAlertType] = useState('medical');
+  const [sosMessage, setSosMessage] = useState('');
+  const [sosSending, setSosSending] = useState(false);
+  const [sosSent, setSosSent] = useState(false);
 
   // Load token on startup
   useEffect(() => {
@@ -55,6 +60,14 @@ export default function Home() {
     user && (user.role === 'nutritionist' || user.role === 'admin') ? '/api/users' : null,
     authenticatedFetcher
   );
+
+  // Fetch SOS alerts — auto refreshes every 15s for live monitoring
+  const { data: sosAlerts, mutate: mutateSOS } = useSWR(
+    user && ['nutritionist', 'doctor', 'admin'].includes(user.role) ? '/api/sos' : null,
+    authenticatedFetcher,
+    { refreshInterval: 15000 }
+  );
+  const pendingSOS = Array.isArray(sosAlerts) ? sosAlerts.filter((a: any) => a.status === 'pending') : [];
 
   // Fetch logged in student's diet plans
   const { data: studentPlans } = useSWR(
@@ -165,6 +178,28 @@ export default function Home() {
   // Helper: is this genotype a sickle cell patient?
   function isSCDGenotype(genotype: string) {
     return genotype === 'SS' || genotype === 'SC';
+  }
+
+  // SOS Distress Alert Handlers
+  async function handleSendSOS(e: React.FormEvent) {
+    e.preventDefault();
+    setSosSending(true);
+    try {
+      await axios.post(`${API_BASE}/api/sos`, { alertType: sosAlertType, message: sosMessage }, getHeaders());
+      setSosSent(true);
+      setSosMessage('');
+      setTimeout(() => { setSosModalOpen(false); setSosSent(false); }, 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to send SOS. Please try again.');
+    }
+    setSosSending(false);
+  }
+
+  async function handleAcknowledgeSOS(id: string) {
+    try {
+      await axios.put(`${API_BASE}/api/sos/${id}/acknowledge`, {}, getHeaders());
+      mutateSOS();
+    } catch { alert('Failed to acknowledge alert.'); }
   }
 
   // If not logged in, render the login page
@@ -515,9 +550,139 @@ export default function Home() {
                       ⚠️ Genotype not recorded. Contact admin to update your health profile.
                     </div>
                   )}
+
+                  {/* SOS Distress Button — only for students and staff */}
+                  {(user.role === 'student' || user.role === 'staff') && (
+                    <div style={{ marginTop: '1.25rem' }}>
+                      <button
+                        onClick={() => setSosModalOpen(true)}
+                        style={{
+                          width: '100%', padding: '0.9rem 1rem',
+                          background: 'linear-gradient(135deg, #dc2626, #991b1b)',
+                          color: 'white', border: 'none', borderRadius: '12px',
+                          fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
+                          boxShadow: '0 0 0 4px rgba(220,38,38,0.25), 0 4px 12px rgba(220,38,38,0.4)',
+                          letterSpacing: '0.03em'
+                        }}
+                      >
+                        🚨 SOS Distress Alert
+                      </button>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.4rem' }}>
+                        Instantly notifies your university doctor &amp; nutritionist
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>
+          </div>
+        )}
+
+        {/* SOS Modal Overlay */}
+        {sosModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+          }}>
+            <div style={{
+              background: 'white', borderRadius: '18px', padding: '2rem',
+              maxWidth: '480px', width: '100%',
+              boxShadow: '0 25px 60px rgba(220,38,38,0.3)',
+              border: '2px solid #fca5a5'
+            }}>
+              {sosSent ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
+                  <h3 style={{ color: '#059669', marginBottom: '0.5rem' }}>Alert Sent Successfully!</h3>
+                  <p style={{ color: '#475569', fontSize: '0.9rem' }}>
+                    Your university doctor and nutritionist have been notified. Help is on the way.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                    <span style={{ fontSize: '2rem' }}>🚨</span>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#dc2626', fontSize: '1.2rem' }}>SOS Distress Alert</h3>
+                      <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>
+                        This will immediately notify your university medical &amp; nutrition team.
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSendSOS} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', display: 'block', marginBottom: '0.5rem' }}>
+                        Type of Emergency
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        {[
+                          { value: 'medical', label: '🩺 Medical', desc: 'Physical symptoms, pain' },
+                          { value: 'nutrition', label: '🥗 Nutrition', desc: 'Diet reaction, allergy' },
+                          { value: 'crisis', label: '⚡ Crisis', desc: 'Urgent / SCD episode' },
+                          { value: 'other', label: '📋 Other', desc: 'General concern' }
+                        ].map(opt => (
+                          <button
+                            key={opt.value} type="button"
+                            onClick={() => setSosAlertType(opt.value)}
+                            style={{
+                              padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
+                              border: sosAlertType === opt.value ? '2px solid #dc2626' : '2px solid #e2e8f0',
+                              background: sosAlertType === opt.value ? '#fff5f5' : 'white',
+                              transition: 'all 0.15s'
+                            }}
+                          >
+                            <div style={{ fontWeight: 700, fontSize: '0.82rem', color: sosAlertType === opt.value ? '#dc2626' : '#374151' }}>{opt.label}</div>
+                            <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>{opt.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', display: 'block', marginBottom: '0.4rem' }}>
+                        Message <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optional)</span>
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={sosMessage}
+                        onChange={e => setSosMessage(e.target.value)}
+                        placeholder="Describe your situation briefly... e.g. 'I am having chest pains and dizziness'"
+                        className="form-input"
+                        style={{ resize: 'none', fontSize: '0.85rem' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button
+                        type="submit" disabled={sosSending}
+                        style={{
+                          flex: 1, padding: '0.9rem',
+                          background: sosSending ? '#94a3b8' : 'linear-gradient(135deg, #dc2626, #991b1b)',
+                          color: 'white', border: 'none', borderRadius: '10px',
+                          fontWeight: 800, fontSize: '0.95rem', cursor: sosSending ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {sosSending ? '📡 Sending...' : '🚨 Send SOS Now'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setSosModalOpen(false); setSosMessage(''); setSosAlertType('medical'); }}
+                        style={{
+                          padding: '0.9rem 1.2rem', background: '#f1f5f9',
+                          color: '#475569', border: '1px solid #e2e8f0', borderRadius: '10px',
+                          fontWeight: 600, cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
           </div>
         )}
 
@@ -526,6 +691,54 @@ export default function Home() {
         {tab === 'nutritionist-panel' && (user.role === 'nutritionist' || user.role === 'admin') && (
           <div className="dashboard-layout">
             <div>
+
+              {/* SOS Alert Inbox — shows only when there are pending alerts */}
+              {pendingSOS.length > 0 && (
+                <div className="card" style={{ marginBottom: '1.5rem', border: '2px solid #fca5a5', background: 'linear-gradient(135deg, #fff5f5, #fff)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.1rem' }}>
+                    <span style={{ fontSize: '1.4rem' }}>🚨</span>
+                    <div>
+                      <h3 style={{ margin: 0, color: '#dc2626', fontSize: '1rem' }}>Active SOS Distress Alerts</h3>
+                      <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Auto-refreshes every 15 seconds</span>
+                    </div>
+                    <span style={{ marginLeft: 'auto', background: '#dc2626', color: 'white', borderRadius: '999px', padding: '0.2rem 0.65rem', fontSize: '0.75rem', fontWeight: 800 }}>{pendingSOS.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {pendingSOS.map((alert: any) => (
+                      <div key={alert.id} style={{ background: 'white', border: '1px solid #fecaca', borderRadius: '10px', padding: '0.9rem 1.1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#dc2626', marginBottom: '0.2rem' }}>
+                            {alert.name}
+                            <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.78rem', marginLeft: '0.5rem' }}>({alert.username})</span>
+                          </div>
+                          <div style={{ fontSize: '0.77rem', color: '#475569', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+                            <span style={{ fontWeight: 700, textTransform: 'capitalize', padding: '0.1rem 0.5rem', borderRadius: '999px', fontSize: '0.72rem',
+                              background: alert.alert_type === 'medical' ? '#fee2e2' : alert.alert_type === 'nutrition' ? '#dcfce7' : alert.alert_type === 'crisis' ? '#ede9fe' : '#f1f5f9',
+                              color: alert.alert_type === 'medical' ? '#dc2626' : alert.alert_type === 'nutrition' ? '#059669' : alert.alert_type === 'crisis' ? '#7c3aed' : '#475569'
+                            }}>
+                              {alert.alert_type === 'medical' ? '🩺' : alert.alert_type === 'nutrition' ? '🥗' : alert.alert_type === 'crisis' ? '⚡' : '📋'} {alert.alert_type}
+                            </span>
+                            <span>🕐 {new Date(alert.created_at).toLocaleString()}</span>
+                          </div>
+                          {alert.message && (
+                            <div style={{ fontSize: '0.82rem', color: '#374151', fontStyle: 'italic', borderLeft: '3px solid #fca5a5', paddingLeft: '0.5rem' }}>
+                              "{alert.message}"
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleAcknowledgeSOS(alert.id)}
+                          className="btn btn-secondary"
+                          style={{ padding: '0.45rem 0.9rem', fontSize: '0.78rem', color: '#059669', borderColor: '#86efac', whiteSpace: 'nowrap', flexShrink: 0 }}
+                        >
+                          ✅ Acknowledge
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="card">
                 <h2>University Student & Staff Registry</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
