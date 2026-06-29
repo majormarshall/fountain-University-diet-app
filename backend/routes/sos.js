@@ -1,12 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { createClient } = require('@supabase/supabase-js');
+const { supabase } = require('../utils/supabase');
 const jwt = require('jsonwebtoken');
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fuo_diet_secret_2024';
 
@@ -28,21 +23,25 @@ router.post('/', auth, async (req, res) => {
   if (!alertType) return res.status(400).json({ message: 'Alert type is required' });
 
   try {
-    // Look up the sender's DB record to get their uuid
-    const { data: senderRows } = await supabase
+    // Look up full user record from DB using id from JWT
+    const { data: userRows, error: userErr } = await supabase
       .from('users')
       .select('id, name, username')
-      .eq('username', req.user.username)
+      .eq('id', req.user.id)
       .limit(1);
 
-    const sender = senderRows?.[0];
+    if (userErr || !userRows || userRows.length === 0) {
+      return res.status(404).json({ message: 'User not found in database' });
+    }
+
+    const sender = userRows[0];
 
     const { data, error } = await supabase
       .from('sos_alerts')
       .insert([{
-        user_id: sender?.id || null,
-        username: req.user.username,
-        name: req.user.name || req.user.username,
+        user_id: sender.id,
+        username: sender.username,
+        name: sender.name,
         alert_type: alertType,
         message: message || '',
         status: 'pending'
@@ -58,7 +57,7 @@ router.post('/', auth, async (req, res) => {
     return res.status(201).json({ message: 'SOS alert sent successfully', id: data.id });
   } catch (err) {
     console.error('SOS error:', err);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error', detail: err.message });
   }
 });
 
