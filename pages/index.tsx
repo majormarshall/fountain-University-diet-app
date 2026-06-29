@@ -190,7 +190,8 @@ export default function Home() {
       setSosMessage('');
       setTimeout(() => { setSosModalOpen(false); setSosSent(false); }, 3000);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to send SOS. Please try again.');
+      const detail = err.response?.data?.detail || err.response?.data?.message || err.message || 'Unknown error';
+      alert(`SOS failed: ${detail}`);
     }
     setSosSending(false);
   }
