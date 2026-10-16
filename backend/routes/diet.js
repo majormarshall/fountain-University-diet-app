@@ -135,7 +135,7 @@ router.get('/:studentUsername(*)', auth, async (req, res) => {
 });
 
 router.post('/:studentUsername(*)', auth, async (req, res) => {
-  if (req.user.role !== 'nutritionist' && req.user.role !== 'admin') {
+  if (req.user.role !== 'nutritionist' && req.user.role !== 'admin' && req.user.role !== 'doctor') {
     return res.status(403).json({ message: 'Forbidden' });
   }
   

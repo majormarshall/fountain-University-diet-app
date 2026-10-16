@@ -32,7 +32,7 @@ export default function NigerianFoodPicker({ label, value, onChange, scdMode = f
 
   const ratingBadge = (rating: SCDRating) => {
     if (!rating) return null;
-    const c = SCD_RATING_COLORS[rating] || {};
+    const c = SCD_RATING_COLORS[rating] || { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' };
     return (
       <span style={{
         fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.45rem',

@@ -32,6 +32,7 @@ export default function Home() {
   const [lunchItem, setLunchItem] = useState('');
   const [dinnerItem, setDinnerItem] = useState('');
   const [snacksItem, setSnacksItem] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // SOS Distress Alert States
   const [sosModalOpen, setSosModalOpen] = useState(false);
@@ -55,9 +56,9 @@ export default function Home() {
   const authenticatedFetcher = (url: string) => 
     axios.get(`${API_BASE}${url}`, getHeaders()).then(r => r.data);
 
-  // Fetch university users (students/staff) for nutritionist panel
+  // Fetch university users for nutritionist/doctor panel
   const { data: allUsers } = useSWR(
-    user && (user.role === 'nutritionist' || user.role === 'admin') ? '/api/users' : null,
+    user && ['nutritionist', 'doctor', 'admin'].includes(user.role) ? '/api/users' : null,
     authenticatedFetcher
   );
 
@@ -100,7 +101,7 @@ export default function Home() {
       // Auto redirect based on role
       if (loggedUser.role === 'admin') {
         router.push('/admin');
-      } else if (loggedUser.role === 'nutritionist') {
+      } else if (loggedUser.role === 'nutritionist' || loggedUser.role === 'doctor') {
         setTab('nutritionist-panel');
       } else {
         setTab('home');
@@ -140,7 +141,7 @@ export default function Home() {
   // Publish a custom diet plan
   async function handlePublishDiet(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedStudent) return;
+    if (!selectedStudent || isPublishing) return;
 
     const meals = [
       { name: 'Breakfast', items: [{ food: breakfastItem || 'Custom Item' }] },
@@ -149,6 +150,7 @@ export default function Home() {
       { name: 'Snacks', items: [{ food: snacksItem || 'Custom Item' }] }
     ];
 
+    setIsPublishing(true);
     try {
       await axios.post(
         `${API_BASE}/api/diet/${encodeURIComponent(selectedStudent.username)}`,
@@ -172,6 +174,8 @@ export default function Home() {
       mutateSelectedStudentPlans();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to publish diet plan.');
+    } finally {
+      setIsPublishing(false);
     }
   }
 
@@ -333,12 +337,12 @@ export default function Home() {
               🩸 Sickle Cell Diet
             </button>
           )}
-          {(user.role === 'nutritionist' || user.role === 'admin') && (
+          {(user.role === 'nutritionist' || user.role === 'doctor' || user.role === 'admin') && (
             <button 
               onClick={() => setTab('nutritionist-panel')} 
               className={`tab-btn ${tab === 'nutritionist-panel' ? 'active' : ''}`}
             >
-              🥑 Nutritionist Control Panel
+              {user.role === 'doctor' ? '🩺 Doctor Panel' : '🥑 Nutritionist Panel'}
             </button>
           )}
           {user.role === 'admin' && (
@@ -386,7 +390,7 @@ export default function Home() {
                               </h4>
                               {meal.items?.map((item: any, i: number) => (
                                 <div key={i} style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                  🍽️ {item.food}
+                                  🍽️ {typeof item.food === 'object' && item.food !== null ? item.food.name : item.food}
                                 </div>
                               ))}
                             </div>
@@ -689,7 +693,7 @@ export default function Home() {
 
         {tab === 'sickle' && isSCDGenotype(user.meta?.genotype || '') && <SickleCellSection userRole={user.role} />}
 
-        {tab === 'nutritionist-panel' && (user.role === 'nutritionist' || user.role === 'admin') && (
+        {tab === 'nutritionist-panel' && ['nutritionist', 'doctor', 'admin'].includes(user.role) && (
           <div className="dashboard-layout">
             <div>
 
@@ -807,7 +811,9 @@ export default function Home() {
                             {plan.meals?.map((m: any, idx: number) => (
                               <div key={idx} style={{ background: '#f8fafc', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>{m.name}</span>
-                                <strong style={{ fontSize: '0.85rem' }}>{m.items?.[0]?.food || '—'}</strong>
+                                <strong style={{ fontSize: '0.85rem' }}>
+                                  {typeof m.items?.[0]?.food === 'object' && m.items?.[0]?.food !== null ? m.items[0].food.name : (m.items?.[0]?.food || '—')}
+                                </strong>
                               </div>
                             ))}
                           </div>
@@ -930,8 +936,13 @@ export default function Home() {
 
 
 
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
-                      Publish Personalized Plan
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      style={{ width: '100%', marginTop: '0.5rem', opacity: isPublishing ? 0.7 : 1 }}
+                      disabled={isPublishing}
+                    >
+                      {isPublishing ? '⏳ Publishing Plan...' : 'Publish Personalized Plan'}
                     </button>
                   </form>
                 </div>
