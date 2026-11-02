@@ -104,7 +104,7 @@ router.get('/:studentUsername(*)', auth, async (req, res) => {
     // 2. Fetch diet plans joining creator info
     const { data: plans, error: plansError } = await supabase
       .from('diet_plans')
-      .select('*, created_by:users(id, name, username)')
+      .select('*, created_by:users!created_by(id, name, username)')
       .eq('student_id', student.id);
       
     if (plansError) {

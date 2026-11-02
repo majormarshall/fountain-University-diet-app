@@ -191,7 +191,7 @@ router.post('/me/change-password', auth, async (req, res) => {
       
     if (error) {
       console.error('Database query for changing password failed', error);
-      return res.status(500).json({ message: 'Internal database error' });
+      return res.status(500).json({ message: 'Internal database error', detail: error.message });
     }
     
     const user = users && users[0];

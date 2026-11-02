@@ -17,16 +17,21 @@ function signToken(user) {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+
   try {
+    const cleanUsername = String(username).trim().replace(/"/g, '""');
     // Query users where username or email matches the input case-insensitively
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
-      .or(`username.ilike."${username}",email.ilike."${username}"`);
+      .or(`username.ilike."${cleanUsername}",email.ilike."${cleanUsername}"`);
 
     if (error) {
       console.error('Login database error', error);
-      return res.status(500).json({ message: 'Internal database error' });
+      return res.status(500).json({ message: 'Internal database error', detail: error.message });
     }
 
     const user = users && users[0];
